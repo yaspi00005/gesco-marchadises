@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BaseColisDetails index{% endblock %}
+
+{% block body %}
+    <h1>BaseColisDetails index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>TypeMarchandises</th>
+                <th>PoidsVolume</th>
+                <th>PrixPoidsVolume</th>
+                <th>MontantTotal</th>
+                <th>Photo</th>
+                <th>Reception</th>
+                <th>NumeroColis</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for base_colis_detail in base_colis_details %}
+            <tr>
+                <td>{{ base_colis_detail.id }}</td>
+                <td>{{ base_colis_detail.typeMarchandises }}</td>
+                <td>{{ base_colis_detail.poidsVolume }}</td>
+                <td>{{ base_colis_detail.prixPoidsVolume }}</td>
+                <td>{{ base_colis_detail.montantTotal }}</td>
+                <td>{{ base_colis_detail.photo }}</td>
+                <td>{{ base_colis_detail.reception ? 'Yes' : 'No' }}</td>
+                <td>{{ base_colis_detail.numeroColis }}</td>
+                <td>
+                    <a href="{{ path('app_base_colis_details_show', {'id': base_colis_detail.id}) }}">show</a>
+                    <a href="{{ path('app_base_colis_details_edit', {'id': base_colis_detail.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="9">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_base_colis_details_new') }}">Create new</a>
+{% endblock %}

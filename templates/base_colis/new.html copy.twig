@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Hello ParametresController!
+{% endblock %}
+
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Expédition</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">Expédition</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="content-page p-4">
+        <div class="alert"></div>
+        <div class="row">
+          <div class="col-md-8 offset-md-2">
+            <h3 class="page-title">Programmer un nouvel envoi de colis</h3>
+            {{ form_start(form) }}
+            <form id="colisForm">
+              <div class="form-group">
+                <h3>Informations du Destinateur</h3>
+                <label for="nomDestinateur">Nom</label>
+                <input type="text" name="nomDestinateur" placeholder="Nom du destinateur" required />
+
+                <label for="adresseDestinateur">Adresse</label>
+                <input type="text" name="adresseDestinateur" placeholder="Adresse du destinateur" required />
+
+                <label for="telephoneDestinateur">Téléphone</label>
+                <input type="text" name="telephoneDestinateur" placeholder="Téléphone du destinateur" required />
+              </div>
+
+              <div id="colisContainer">
+                <h3>Informations des Colis</h3>
+                <div class="colis-group">
+                  <div class="form-group">
+                    <label for="description">Description du colis</label>
+                    <input type="text" name="description[]" placeholder="Description du colis" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="poids">Poids (en kg)</label>
+                    <input type="number" name="poids[]" step="0.1" placeholder="Poids en kg" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="valeur">Valeur estimée (en XOF)</label>
+                    <input type="number" name="valeur[]" step="0.01" placeholder="Valeur estimée" required />
+                  </div>
+                  <button type="button" class="remove-colis">Supprimer ce colis</button>
+                </div>
+              </div>
+              <button type="button" id="addColis">Ajouter un autre colis</button>
+              <button type="submit">Envoyer</button>
+            </form>
+            {{ form_end(form) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/traitements.js"></script>
+{% endblock %}

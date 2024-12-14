@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BaseColis{% endblock %}
+
+{% block body %}
+    <h1>BaseColis</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ base_coli.id }}</td>
+            </tr>
+            <tr>
+                <th>NumeroSuivi</th>
+                <td>{{ base_coli.numeroSuivi }}</td>
+            </tr>
+            <tr>
+                <th>PoidsColis</th>
+                <td>{{ base_coli.poidsColis }}</td>
+            </tr>
+            <tr>
+                <th>TypeMarchandises</th>
+                <td>{{ base_coli.typeMarchandises }}</td>
+            </tr>
+            <tr>
+                <th>Prix</th>
+                <td>{{ base_coli.prix }}</td>
+            </tr>
+            <tr>
+                <th>DateReceptions</th>
+                <td>{{ base_coli.dateReceptions ? base_coli.dateReceptions|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>DateRecuperations</th>
+                <td>{{ base_coli.dateRecuperations ? base_coli.dateRecuperations|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>StatutPaiments</th>
+                <td>{{ base_coli.statutPaiments }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_base_colis_index') }}">back to list</a>
+
+    <a href="{{ path('app_base_colis_edit', {'id': base_coli.id}) }}">edit</a>
+
+    {{ include('base_colis/_delete_form.html.twig') }}
+{% endblock %}

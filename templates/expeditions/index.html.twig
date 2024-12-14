@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Stocks index
+{% endblock %}
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/dataTables.bootstrap4.min.css" />
+{% endblock %}
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Gestion des Expéditions</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">Expéditions</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4 col-3"></div>
+        <div class="col-sm-8 col-9 text-right m-b-20">
+          <a href="{{ path('app_expeditions_new') }}" class="btn btn-primary float-right btn-rounded"><i class="fas fa-plus"></i> Nouvelle Expéditions</a>
+        </div>
+      </div>
+      <div class="content-page">
+        <div class="row filter-row">
+          <div class="col-sm-6 col-md-3">
+            <div class="form-group custom-mt-form-group">
+              <input type="date" id="debut" />
+              <label class="control-label">Date de début</label><i class="bar"></i>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-3">
+            <div class="form-group custom-mt-form-group">
+              <input type="date" id="fin" />
+              <label class="control-label">Date de fin</label><i class="bar"></i>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-md-3">
+            <a href="#" class="btn btn-success btn-block mt-4 mb-2 periode">Chercher</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="table-responsive">
+              <table class="table table-striped custom-table datatable">
+                <thead>
+                  <tr>
+                    <th style="min-width:50px;">Numero Expeditions</th>
+                    <th style="min-width:70px;">Mode Transport</th>
+                    <th style="min-width:70px;">Départ</th>
+                    <th style="min-width:70px;">Destinations</th>
+                    <th style="min-width:50px;">Date Expéditions</th>
+                    <th class="text-right" style="min-width:50px;">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for expedition in expeditions %}
+                    <tr>
+                      <td>EX-{{ expedition.numeroExpeditions }}</td>
+                      <td>{{ expedition.modeTransport }}</td>
+                      <td>{{ expedition.depart }}</td>
+                      <td>{{ expedition.destinations }}</td>
+                      <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('Y-m-d') : '' }}</td>
+                      <td>{{ expedition.dateArrive ? expedition.dateArrive|date('Y-m-d') : '' }}</td>
+                      <td class="text-right"></td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/traitements.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/dataTables.bootstrap4.min.js"></script>
+{% endblock %}

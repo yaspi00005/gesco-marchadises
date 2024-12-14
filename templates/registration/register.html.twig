@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}User index{% endblock %}
+
+{% block body %}
+     <div class="page-wrapper"> <!-- content -->
+            <div class="content container-fluid">
+			<div class="page-header">
+					<div class="row">
+						<div class="col-lg-7 col-md-12 col-sm-12 col-12">
+							<h5 class="text-uppercase">Liste des utilisateurs</h5>
+						</div>
+						<div class="col-lg-5 col-md-12 col-sm-12 col-12">
+							<ul class="list-inline breadcrumb float-right">
+								<li class="list-inline-item"><a href="/">Accueil</a></li>
+								<li class="list-inline-item"> Utilisateur</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+                <div class="row">
+                    <div class="col-sm-4 col-3">
+                      
+                    </div>
+                    <div class="col-sm-8 col-9 text-right m-b-20">
+                        <a  data-toggle="modal" data-target="#add_user" href="#" class="btn btn-primary float-right btn-rounded"><i class="fas fa-plus"></i> Ajouter un utilisateur</a>
+                    </div>
+                </div>
+			<div class="content-page">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="table-responsive">
+                            <table class="table table-striped custom-table datatable">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width:50px;">Téléphone </th>
+                                        <th style="min-width:70px;">Nom</th>
+                                        <th style="min-width:50px;">Rôles</th>
+                                        <th class="text-right" style="min-width:50px;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for user in users %}
+                                    <tr>
+                                        <td>
+                                           
+                                            <h2><a href="profile.html">{{  user.usename }} </h2>
+                                        </td>
+                                        <td>{{  user.prenom }} {{  user.nom }}</td>
+                                        <td>{% for role in user.roles %} {% if role == 'ROLE_ADMIN' %} ADMIN {% else %} UTIL {% endif %}{% endfor %}</td>
+                                        <td class="text-right" >
+                                            <a href="edit-exam.html" class="btn btn-primary btn-sm mb-1">
+                                                <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                                            </a>
+                                            <button type="submit" data-toggle="modal" data-target="#delete_employee" class="btn btn-danger btn-sm mb-1">
+                                            <i class="fas fa-trash" aria-hidden="true"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+		</div>
+		 <div id="add_user" class="modal" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content modal-md">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Nouveau utilisateur</h4>
+                    </div>
+                    <div class="row">
+                     <div class="modal-body">
+						<div class="col-lg-12">
+                         {{ form_start(registrationForm) }}
+                            <div class="form-group custom-mt-form-group">
+                            {{ form_widget(registrationForm.usename) }}
+                                <label class="control-label">Téléphone</label><i class="bar"></i>
+                            </div>
+                             <div class="form-group custom-mt-form-group">
+                            {{ form_widget(registrationForm.prenom) }}
+                                <label class="control-label">Prenom</label><i class="bar"></i>
+                            </div>
+                            <div class="form-group custom-mt-form-group">
+                            {{ form_widget(registrationForm.nom) }}
+                                <label class="control-label">Nom</label><i class="bar"></i>
+                            </div>
+                            <div class="form-group custom-mt-form-group">
+                            {{ form_widget(registrationForm.roles) }}
+                                <label class="control-label">Rôle</label><i class="bar"></i>
+                            </div>
+                             <div class="form-group custom-mt-form-group">
+                                <button type="submit" class="btn btn-success">Ajouter</button>
+                            </div>
+                            {{ form_end(registrationForm) }}
+                        </div>
+                     </div>
+					</div>
+                </div>
+            </div>
+        </div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Hello ParametresController!
+{% endblock %}
+
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Expédition</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">Expédition</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="content-page p-4">
+        <div class="alert"></div>
+        <div class="row">
+          <div class="col-md-8 offset-md-2">
+            <h3 class="page-title">Programmer un nouvel envoi de colis</h3>
+            {{ form_start(form) }}
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="form-group custom-mt-form-group">
+                  {{ form_widget(form.modeTransport) }}
+                  <label class="control-label">Mode de transport<span class="text-danger">*</span></label><i class="bar"></i>
+                </div>
+              </div>
+             {#  <div class="col-sm-6">
+                <div class="form-group custom-mt-form-group">
+                  {{ form_widget(form.numeroExpeditions) }}
+                  <label class="control-label">Numéro expéditions</label><i class="bar"></i>
+                </div>
+              </div> #}
+            </div>
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="form-group custom-mt-form-group">
+                  {{ form_widget(form.depart) }}
+                  <label class="control-label">Départ<span class="text-danger">*</span></label><i class="bar"></i>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-group custom-mt-form-group">
+                  {{ form_widget(form.destinations) }}
+                  <label class="control-label">Arrivé</label><i class="bar"></i>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-group custom-mt-form-group">
+                  {{ form_widget(form.dateExpeditions) }}
+                  <label class="control-label">Date d'expédition prévu</label><i class="bar"></i>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12 text-center m-t-20">
+                <button type="submit" class="btn btn-primary btn-lg mb-3">Ajouter</button>
+              </div>
+            </div>
+            {{ form_end(form) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/traitements.js"></script>
+{% endblock %}
