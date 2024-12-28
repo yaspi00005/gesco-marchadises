@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Hello ParametresController!
+{% endblock %}
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/colis.css" />
+{% endblock %}
+
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Expédition</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">Expédition</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="content-page p-4">
+      <div class="card">
+     
+      <div class="card-body"> {% include "alert.html.twig" %}
+        <p><strong>Numéro de suivi :</strong> {{ colis.numeroSuivi }}</p>
+       {#  <p><strong>Expéditeur :</strong> {{ colis.expediteur }}</p> #}
+        <p><strong>Date de réception :</strong> {{ colis.dateReceptions ? colis.dateReceptions|date('d-m-Y') }}</p>
+       {#  <p><strong>Marchandises :</strong> {{ colis.details }}</p> #}
+        <p><strong>Statut actuel :</strong> {{ colis.statut }}</p>
+
+        <!-- Formulaire pour changer le statut -->
+        <form action="{{ path('changer_statut_via_qr', {url: colis.url}) }}" method="POST">
+          <div class="form-group">
+            <label for="nouveauStatut">Changer le statut</label>
+            <select class="form-control" id="nouveauStatut" name="nouveauStatut">
+              <option value="en attente" {% if colis.statut == 'en attente' %}selected{% endif %}>En attente</option>
+              <option value="en cours" {% if colis.statut == 'en cours' %}selected{% endif %}>En cours</option>
+              <option value="livré" {% if colis.statut == 'livré' %}selected{% endif %}>Livré</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary mt-3">Mettre à jour le statut</button>
+        </form>
+      </div>
+    </div>
+      
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/traitements.js"></script>
+{% endblock %}

@@ -23,7 +23,7 @@ class RegistrationController extends AbstractController
 {
     public function __construct(private EmailVerifier $emailVerifier) {}
 
-    #[Route('/register', name: 'app_register')]
+    #[Route('/base/register', name: 'app_register')]
     public function register(Request $request, UserRepository $users, UserPasswordHasherInterface $userPasswordHasher, Security $security, EntityManagerInterface $entityManager): Response
     {
         $user = new User();

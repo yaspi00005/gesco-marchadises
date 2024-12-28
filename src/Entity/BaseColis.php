@@ -59,13 +59,19 @@ class BaseColis
     private ?bool $receptions = false;
 
     #[ORM\Column(length: 100)]
-    private ?string $etatColis = 'En préparation';
+    private ?string $statut = 'En préparation';
 
     #[ORM\Column]
     private ?int $poidsVolumeTotal = 0;
 
     #[ORM\Column]
     private ?int $unites = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $qrCodePath = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $url = null;
 
     public function __construct()
     {
@@ -240,14 +246,14 @@ class BaseColis
         return $this;
     }
 
-    public function getEtatColis(): ?string
+    public function getStatut(): ?string
     {
-        return $this->etatColis;
+        return $this->statut;
     }
 
-    public function setEtatColis(string $etatColis): static
+    public function setStatut(string $statut): static
     {
-        $this->etatColis = $etatColis;
+        $this->statut = $statut;
 
         return $this;
     }
@@ -272,6 +278,30 @@ class BaseColis
     public function setUnites(int $unites): static
     {
         $this->unites = $unites;
+
+        return $this;
+    }
+
+    public function getQrCodePath(): ?string
+    {
+        return $this->qrCodePath;
+    }
+
+    public function setQrCodePath(string $qrCodePath): static
+    {
+        $this->qrCodePath = $qrCodePath;
+
+        return $this;
+    }
+
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(string $url): static
+    {
+        $this->url = $url;
 
         return $this;
     }

@@ -96,12 +96,23 @@
                       <td class="text-left">{{ base_coli.poidsVolumeTotal }}</td>
                       <td class="text-left">{{ base_coli.unites }}</td>
                       <td class="text-left">{{ base_coli.fraisExpeditions|number_format(0, '.', ',') }}</td>
-                      <td class="text-right">{{ base_coli.etatColis }}</td>
+                      <td class="text-right">
+                        <a class="btn btn-sm btn-rounded 
+                            {% if base_coli.statut == 'En Préparation' %} btn-etat-prepared
+                            {% elseif base_coli.statut == 'Expédié' %} btn-etat-shipped
+                            {% elseif base_coli.statut == 'Livré' %} btn-etat-delivered
+                            {% elseif base_coli.statut == 'Annulé' %} btn-etat-cancelled
+                            {% else %}btn-etat-pending{% endif %}" 
+                            href="#">
+                            {{ base_coli.statut }}
+                        </a>
+                    </td>
+
                       <td>{{ base_coli.dateReceptions ? base_coli.dateReceptions|date('d-m-Y') }}</td>
                       <td>{{ base_coli.dateRecuperations ? base_coli.dateRecuperations|date('d-m-Y') }}</td>
                       <td>{{ base_coli.destinateurs.prenom ~ ' ' ~ base_coli.destinateurs.nom }}</td>
                       <td>
-                        <a href="#" >{{ base_coli.expeditions.numeroExpeditions }}</a>
+                        <a href="#">{{ base_coli.expeditions.numeroExpeditions }}</a>
                       </td>
                       <td>{{ base_coli.expeditions.modeTransport }}</td>
                     </tr>

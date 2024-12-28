@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Hello ParametresController!
+{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/colis.css" />
+{% endblock %}
+
+{% block body %}
+  <div class="page-wrapper">
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Écouter l'ouverture de l'affichage des détails
+        const detailsButton = document.getElementById("detailsButton");
+        detailsButton.addEventListener("click", function () {
+            const colisId = detailsButton.getAttribute("data-id");
+
+            // Charger les détails via AJAX
+            fetch(`/base/colis/details/${colisId}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    const detailsContent = document.getElementById("detailsContent");
+
+                    // Remplir le contenu avec les détails
+                    detailsContent.innerHTML = `
+                        <h5>Numéro de suivi : ${data.numeroSuivi}</h5>
+                        <p><strong>Destinateur :</strong> ${data.expediteur}</p>
+                         <p><strong>Téléphone :</strong> ${data.telephone}</p>
+                        <p><strong>Date de réception :</strong> ${data.dateReception}</p>
+                        <img src="/uploads/${data.qrCodePath}" alt="QR Code" class="img-thumbnail" style="max-width: 200px;">
+                    `;
+                })
+                .catch((error) => {
+                    console.error("Erreur lors du chargement des détails :", error);
+                });
+        });
+      });
+
+      function printReceipt() {
+        const printWindow = window.open("", "PRINT", "height=600,width=800");
+
+        // Contenu HTML à imprimer
+        const detailsContent = document.getElementById("detailsContent").innerHTML;
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Reçu</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; font-size: 12px; }
+                        img { max-width: 100px; }
+                        .qr-code { text-align: center; margin: 10px 0; }
+                    </style>
+                </head>
+                <body>
+                <h1>AIR CARGO</h1>
+                    <h3>Reçu du Colis</h3>
+                    ${detailsContent}
+                </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+      }
+    </script>
+
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Expédition</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">Expédition</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-page p-4">
+        <div class="alert"></div>
+
+        <!-- Bouton pour afficher les détails -->
+        <button type="button" class="btn btn-primary" id="detailsButton" data-id="{{ colis }}">Afficher les détails</button>
+
+        <!-- Section pour afficher les détails -->
+        <div id="detailsContent" class="mt-4">
+          <!-- Les détails du colis seront chargés ici -->
+          <div class="text-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bouton pour imprimer -->
+        <button class="btn btn-success mt-3" onclick="printReceipt()">Imprimer le reçu</button>
+      </div>
+    </div>
+  </div>
+
+  
+{% endblock %}
+
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/recus.js"></script>
+{% endblock %}

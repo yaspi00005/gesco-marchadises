@@ -10,10 +10,10 @@
     <link rel="stylesheet" type="text/css" href="assets/plugins/fontawesome/css/all.min.css" />
     <link rel="stylesheet" type="text/css" href="assets/plugins/fontawesome/css/fontawesome.min.css" />
     <link rel="stylesheet" type="text/css" href="assets/css/style.css" />
-    <!-- [if lt IE 9]>
+    <!--  [if lt IE 9]>
 		<script src="assets/js/html5shiv.min.js"></script>
 		<script src="assets/js/respond.min.js"></script>
-	<![endif] -->
+	<![endif]  -->
   </head>
 
   <body>
@@ -32,34 +32,41 @@
               <div class="account-logo">
                 <a href=""><img src="assets/img/logo.jpg" alt="GescoFlex" /></a>
               </div>
-              <form method="post">
-                {% if error %}
-                  <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-                {% endif %}
-
+              {{ form_start(registrationForm) }}
                 {% if app.user %}
                   <div class="mb-3">
                     You are logged in as {{ app.user.userIdentifier }}, <a href="{{ path('app_logout') }}">Logout</a>
                   </div>
                 {% endif %}
                 <div class="form-group custom-mt-form-group">
-                  <input type="text" value="{{ last_username }}" name="usename" id="inputUsename" class="form-control" autocomplete="username" required autofocus />
-                  <label class="control-label">Nom d'utilisateur</label><i class="bar"></i>
+                {{ form_widget(registrationForm.usename) }}
+                  <label class="control-label">Numéro de téléphone (WhatsApp) "</label><i class="bar"></i>
                 </div>
                 <div class="form-group custom-mt-form-group">
-                  <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required />
-
-                  <label class="control-label">Mot de passe</label><i class="bar"></i>
+                  {{ form_widget(registrationForm.prenom) }}
+                  <label class="control-label">Prénom</label><i class="bar"></i>
+                </div>
+                <div class="form-group custom-mt-form-group">
+                  {{ form_widget(registrationForm.nom) }}
+                  <label class="control-label">Nom</label><i class="bar"></i>
+                </div>
+                <div class="form-group custom-mt-form-group">
+                   {{ form_widget(registrationForm.email) }}
+                  <label class="control-label">Email</label><i class="bar"></i>
+                </div>
+                 <div class="form-group custom-mt-form-group">
+                   {{ form_widget(registrationForm.agreeTerms) }}
+                  <label class="control-label">Accepter les conditions</label><i class="bar"></i>
                 </div>
                 <div class="form-group text-center custom-mt-form-group">
-                  <button class="btn btn-primary btn-block account-btn" type="submit">Connexion</button>
+                  <button class="btn btn-primary btn-block account-btn" type="submit">Enregistrer</button>
                 </div>
                 <div class="form-group text-center custom-mt-form-group">
-                  <a href="{{ path('app_register_user') }}" class="" >Créer un compte </a>
+                  <a href="{{ path('app_register_user') }}" class="">Se connecter</a>
                 </div>
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}" />
-              </form>
-            </div>
+               
+               {{ form_end(registrationForm) }}
+           
           </div>
         </div>
       </div>

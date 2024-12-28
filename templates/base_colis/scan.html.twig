@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Hello ParametresController!
+{% endblock %}
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/colis.css" />
+{% endblock %}
+
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Expédition</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">Expédition</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div>
+            <button id="startScanBtn">Démarrer le scan QR Code</button>
+            <div id="qr-reader" style="width: 500px; height: 500px;"></div>
+            <div id="result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const startScanBtn = document.getElementById('startScanBtn')
+    const qrReaderElement = document.getElementById('qr-reader')
+    const resultElement = document.getElementById('result')
+    
+    startScanBtn.addEventListener('click', function () {
+      const html5QrCode = new Html5Qrcode('qr-reader')
+    
+      // Démarrer le scanner QR code avec la caméra
+      html5QrCode.start(
+        { facingMode: 'environment' }, // Utiliser la caméra arrière
+        {
+          fps: 10, // Définir les frames par seconde
+          qrbox: 300 // Taille de la zone de détection
+        },
+        function (qrCodeMessage) {
+          // Lorsque le QR code est scanné
+          resultElement.textContent = 'QR Code Scanné: ' + qrCodeMessage
+          html5QrCode.stop() // Arrêter le scanner après lecture
+          fetch('/base/colis/option-scanner/camera/result', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ qrData: qrCodeMessage })
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log(data) // Afficher les données reçues du serveur
+    
+              // Vérifier si une redirection est demandée
+              if (data.redirectUrl) {
+                // Effectuer la redirection vers l'URL retournée par le serveur
+                window.location.href = data.redirectUrl
+              }
+            })
+            .catch((error) => console.error("Erreur lors de l'envoi des données QR:", error))
+        },
+        function (errorMessage) {
+          // Si une erreur se produit
+          console.error(errorMessage)
+        }
+      )
+    })
+  </script>
+{% endblock %}
+
+{% block javascripts %}
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+{% endblock %}
