@@ -116,7 +116,7 @@ class ClientsController extends AbstractController
             'telephone_chine' => '0086 137 98 19 16 52, 0086 186 17 34 54 58',
             'telephone_mali' => '(00223)79 43 38 30',
             'infos' => 'AIR CARGO CHINE- MALI BKO-MLI AD',
-            'warning' => '外包装必须备注客户的姓名和电话' // Ceci est le texte en chinois, qui signifie que l\'emballage doit mentionner le nom et le téléphone du client.
+            'warning' => '外包装必须备注客户的姓名和电话' 
         ];
         $html = $this->renderView('clients/fiches.Export.html.twig', [
             'client' => $client,
