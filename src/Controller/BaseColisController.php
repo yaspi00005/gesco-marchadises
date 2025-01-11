@@ -4,9 +4,11 @@ namespace App\Controller;
 
 use App\Entity\BaseColis;
 use App\Entity\BaseColisDetails;
+use App\Entity\Paiements;
 use App\Form\BaseColisDetailsType;
 use App\Form\BaseColisType;
 use App\Repository\BaseColisRepository;
+use App\Repository\PaiementsRepository;
 use App\Repository\TypeMarchandisesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,7 +26,7 @@ use Endroid\QrCode\Writer\PngWriter;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-#[Route('/base/colis')]
+#[Route('/admin/base/colis')]
 final class BaseColisController extends AbstractController
 {
     #[Route(name: 'app_base_colis_index', methods: ['GET'])]
@@ -126,13 +128,6 @@ final class BaseColisController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_base_colis_show', methods: ['GET'])]
-    public function show(BaseColis $baseColi): Response
-    {
-        return $this->render('base_colis/show.html.twig', [
-            'base_coli' => $baseColi,
-        ]);
-    }
 
     #[Route('/{id}/edit', name: 'app_base_colis_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, BaseColis $baseColi, EntityManagerInterface $entityManager): Response
@@ -328,5 +323,74 @@ final class BaseColisController extends AbstractController
         }
 
         return $this->redirectToRoute('colis_details_statut', ['url' => $url]);
+    }
+
+
+    #[Route('/encaisser/{id}', name: 'encaisser', methods: ['POST'])]
+    public function encaisser(int $id, BaseColisRepository $colisRepository, PaiementsRepository $paiementsRepository, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $colis = $colisRepository->find($id);
+
+        if (!$colis) {
+            return new JsonResponse(['message' => 'Colis introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Vérifiez si un paiement existe déjà pour ce colis
+        $paiementExistant = $paiementsRepository->findOneBy(['colis' => $colis]);
+
+        if ($paiementExistant) {
+            return new JsonResponse(['message' => 'Un paiement existe déjà pour ce colis'], Response::HTTP_CONFLICT);
+        }
+
+        // Créez un nouvel enregistrement de paiement
+        $paiement = new Paiements();
+        $paiement->setColis($colis);
+        $paiement->setMontants($colis->getFraisExpeditions()); // Exemple d'utilisation des frais d'expédition comme montant
+        $paiement->setDatePaiements(new \DateTime());
+        $colis->setStatutPaiements('Payé');
+        $paiement->setModePaiement('Espèces');
+        $paiement->setCaissier($this->getUser());
+        // Sauvegardez le paiement dans la base de données
+        $entityManager->persist($paiement);
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'Paiement enregistré avec succès'], Response::HTTP_CREATED);
+    }
+
+    #[Route('/rechercher', name: 'rechercher', methods: ['GET'])]
+    public function rechercher(Request $request, BaseColisRepository $baseColisRepository): JsonResponse
+    {
+        $numSuivi = $request->query->get('numSuivi');
+        $date = $request->query->get('date');
+        $statut = $request->query->get('statut');
+
+        $queryBuilder = $baseColisRepository->createQueryBuilder('c')
+
+            ->select('c.id, c.numeroSuivi, c.typeExpeditions, c.poidsVolumeTotal, c.unites, c.fraisExpeditions, c.statut, c.statutPaiements, c.dateReceptions, c.dateRecuperations,CONCAT(d.prenom,d.nom) AS destinateurNom, e.numeroExpeditions AS expeditionNom, e.modeTransport AS modeTransport ')
+            ->leftJoin('c.destinateurs', 'd') // Relation avec "destinateurs"
+            ->leftJoin('c.expeditions', 'e'); // Relation avec "expeditions"
+        if (!empty($numSuivi)) {
+            $queryBuilder->andWhere('c.numeroSuivi LIKE :numSuivi')
+                ->setParameter('numSuivi', "%$numSuivi%");
+        }
+
+        if (!empty($date)) {
+            try {
+                $dateTime = new \DateTime($date);
+                $queryBuilder->andWhere('c.dateReceptions = :date')
+                    ->setParameter('date', $dateTime);
+            } catch (\Exception $e) {
+                return new JsonResponse(['error' => 'Date invalide'], 400);
+            }
+        }
+
+        if (!empty($statut) && $statut !== 'Tous') {
+            $queryBuilder->andWhere('c.statut = :statut')
+                ->setParameter('statut', $statut);
+        }
+
+        $result = $queryBuilder->getQuery()->getArrayResult(); // Utilisation de `getArrayResult` pour retourner des données propres
+
+        return new JsonResponse($result);
     }
 }

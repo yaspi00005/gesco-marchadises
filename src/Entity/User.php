@@ -10,11 +10,13 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USENAME', fields: ['usename'])]
-#[UniqueEntity(fields: ['usename'], message: 'There is already an account with this usename')]
+#[UniqueEntity(fields: ['usename'], message: 'Il existe déjà un compte avec ce nom d\'utilisateur')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -22,7 +24,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 8)]
+    #[Assert\Length(
+        min: 8,
+        max: 8,
+        minMessage: 'Your first name must be at least {{ limit }} characters long',
+        maxMessage: 'Your first name cannot be longer than {{ limit }} characters',
+    )]
+    #[Assert\Regex(
+        pattern: '/^(6|7|8|9)\d{7}$/',
+        message: 'Veuillez saisir un numéro de téléphone malien valide.'
+    )]
     private ?string $usename = null;
 
     /**
@@ -38,12 +50,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\NotNull]
+    #[Assert\Length(
+        min: 3,
+        max: 30,
+        minMessage: 'Votre prénom doit comporter au moins {{ limit }} caractères',
+        maxMessage: 'Votre prénom ne peut pas contenir plus de {{ limit }} caractères',
+    )]
     private ?string $prenom = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\NotNull]
+    #[Assert\Length(
+        min: 3,
+        max: 30,
+        minMessage: 'Votre nom doit comporter au moins {{ limit }} caractères',
+        maxMessage: 'Votre nom ne peut pas contenir plus de {{ limit }} caractères',
+    )]
     private ?string $nom = null;
 
-    #[ORM\Column(length: 255 ,nullable:true)]
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Email(
+        message: 'L\'e-mail {{ value }} n\'est pas un e-mail valide.',
+    )]
+    #[Assert\NotBlank]
+    #[Assert\NotNull]
+    #[Assert\Length(
+        max: 100,
+        maxMessage: 'Votre e-mail ne peut pas contenir plus de {{ limit }} caractères',
+    )]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -67,10 +104,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: BaseColis::class, mappedBy: 'destinateurs')]
     private Collection $baseColisDestinateurs;
 
+    /**
+     * @var Collection<int, Paiements>
+     */
+    #[ORM\OneToMany(targetEntity: Paiements::class, mappedBy: 'caissier')]
+    private Collection $paiements;
+
+    #[ORM\Column(length: 255)]
+    private ?string $qrCodePath = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $url = null;
+
     public function __construct()
     {
         $this->baseColis = new ArrayCollection();
         $this->baseColisDestinateurs = new ArrayCollection();
+        $this->paiements = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -276,6 +326,60 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $baseColisDestinateur->setDestinateurs(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Paiements>
+     */
+    public function getPaiements(): Collection
+    {
+        return $this->paiements;
+    }
+
+    public function addPaiement(Paiements $paiement): static
+    {
+        if (!$this->paiements->contains($paiement)) {
+            $this->paiements->add($paiement);
+            $paiement->setCaissier($this);
+        }
+
+        return $this;
+    }
+
+    public function removePaiement(Paiements $paiement): static
+    {
+        if ($this->paiements->removeElement($paiement)) {
+            // set the owning side to null (unless already changed)
+            if ($paiement->getCaissier() === $this) {
+                $paiement->setCaissier(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getQrCodePath(): ?string
+    {
+        return $this->qrCodePath;
+    }
+
+    public function setQrCodePath(string $qrCodePath): static
+    {
+        $this->qrCodePath = $qrCodePath;
+
+        return $this;
+    }
+
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(string $url): static
+    {
+        $this->url = $url;
 
         return $this;
     }

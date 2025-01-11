@@ -27,7 +27,7 @@ class BaseColis
     private ?\DateTimeInterface $dateRecuperations = null;
 
     #[ORM\Column(length: 100)]
-    private ?string $statutPaiments = 'Non payé';
+    private ?string $statutPaiements = 'Non payé';
 
     #[ORM\ManyToOne(inversedBy: 'baseColis')]
     #[ORM\JoinColumn(nullable: false)]
@@ -73,9 +73,23 @@ class BaseColis
     #[ORM\Column(length: 255)]
     private ?string $url = null;
 
+    /**
+     * @var Collection<int, Paiements>
+     */
+    #[ORM\OneToMany(targetEntity: Paiements::class, mappedBy: 'colis')]
+    private Collection $paiements;
+
+    /**
+     * @var Collection<int, Om>
+     */
+    #[ORM\OneToMany(targetEntity: Om::class, mappedBy: 'colis')]
+    private Collection $oms;
+
     public function __construct()
     {
         $this->baseColisDetails = new ArrayCollection();
+        $this->paiements = new ArrayCollection();
+        $this->oms = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -120,14 +134,14 @@ class BaseColis
         return $this;
     }
 
-    public function getStatutPaiments(): ?string
+    public function getStatutPaiements(): ?string
     {
-        return $this->statutPaiments;
+        return $this->statutPaiements;
     }
 
-    public function setStatutPaiments(string $statutPaiments): static
+    public function setStatutPaiements(string $statutPaiements): static
     {
-        $this->statutPaiments = $statutPaiments;
+        $this->statutPaiements = $statutPaiements;
 
         return $this;
     }
@@ -302,6 +316,66 @@ class BaseColis
     public function setUrl(string $url): static
     {
         $this->url = $url;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Paiements>
+     */
+    public function getPaiements(): Collection
+    {
+        return $this->paiements;
+    }
+
+    public function addPaiement(Paiements $paiement): static
+    {
+        if (!$this->paiements->contains($paiement)) {
+            $this->paiements->add($paiement);
+            $paiement->setColis($this);
+        }
+
+        return $this;
+    }
+
+    public function removePaiement(Paiements $paiement): static
+    {
+        if ($this->paiements->removeElement($paiement)) {
+            // set the owning side to null (unless already changed)
+            if ($paiement->getColis() === $this) {
+                $paiement->setColis(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Om>
+     */
+    public function getOms(): Collection
+    {
+        return $this->oms;
+    }
+
+    public function addOm(Om $om): static
+    {
+        if (!$this->oms->contains($om)) {
+            $this->oms->add($om);
+            $om->setColis($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOm(Om $om): static
+    {
+        if ($this->oms->removeElement($om)) {
+            // set the owning side to null (unless already changed)
+            if ($om->getColis() === $this) {
+                $om->setColis(null);
+            }
+        }
 
         return $this;
     }

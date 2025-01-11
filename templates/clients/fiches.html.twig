@@ -1,0 +1,125 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Hello HomeController!
+{% endblock %}
+{% block stylesheets %}
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      border: 1px solid #000;
+      padding: 15px;
+      width: 300px;
+      text-align: center;
+    }
+    .logo {
+      width: 100px;
+      margin: 0 auto;
+    }
+    .info {
+      margin: 15px 0;
+      text-align: left;
+    }
+    .qr-code {
+      margin: 15px auto;
+      width: 100px;
+    }
+    .transitaire {
+      margin-top: 20px;
+      font-size: 12px;
+      text-align: left;
+    }
+    .warning {
+      margin-top: 15px;
+      font-size: 10px;
+      color: red;
+    }
+  </style>
+{% endblock %}
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Fiche client</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">
+                <a href="#">User</a>
+              </li>
+              <li class="list-inline-item">Fiche</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="content-page">
+        <div class="row">
+          <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="container">
+              <!-- Entête : Informations du Transitaire -->
+              <div class="transitaire-info">
+                <img src="{{ asset('assets/img/logo_.jpeg') }}" alt="Logo" class="logo" /> <!-- Remplacez le chemin par celui du logo -->
+                <p>
+                  <strong>{{ transitaire.nom }}</strong>
+                </p>
+                <p>{{ transitaire.infos }}</p>
+                <p>
+                  <strong>Téléphone Chine :</strong> {{ transitaire.telephone_chine }}
+                </p>
+                <p>
+                  <strong>Téléphone Mali :</strong> {{ transitaire.telephone_mali }}
+                </p>
+              </div>
+
+              <!-- Informations du Client -->
+              <div class="client-info">
+                <p>
+                  <strong>Nom :</strong>{{ client.nom }}
+                </p>
+                <p>
+                  <strong>Prénom :</strong>{{ client.prenom }}
+                </p>
+                <p>
+                  <strong>Téléphone :</strong>{{ client.usename }}
+                </p>
+                <img src="{{ asset('uploads/') }}{{ client.qrCodePath }}" alt="QR Code" class="qr-code" />
+              </div>
+
+              <!-- Adresse de Livraison en Chine -->
+              <div class="delivery-address">
+                <p>
+                  <strong>Adresse de Livraison (Chine) :</strong> {{ transitaire.adresse_chine }}
+                </p>
+              </div>
+
+              <!-- Avertissement pour l'emballage -->
+              <div class="warning">
+                <p>
+                  <strong>Avertissement :</strong>{{ transitaire.warning }}
+                </p>
+              </div>
+              <a href="{{ path('client_fiche_export') }}">Exporter</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/moment.min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/bootstrap-datetimepicker.min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/plugins/morris/morris.min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/plugins/raphael/raphael-min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/fullcalendar.min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/jquery.fullcalendar.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/chart.js"></script>
+{% endblock %}

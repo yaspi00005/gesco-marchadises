@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ClientsController!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="row">
+    {% for colis in colis %}
+        <div class="col-sm-6 col-md-6 col-lg-4">
+            <div class="card grid-card">
+                <div class="card-content">
+                    <h5 class="card-title">
+                        <i class="fas fa-box"></i> Colis: #{{ colis.numeroSuivi }}
+                    </h5>
+                    <p>
+                        <strong>Description :</strong> <br>
+                        <strong>Statut :</strong> {{ colis.statut }}<br>
+                        <strong>Date :</strong> {{ colis.dateReceptions ? colis.dateReceptions|date('d-m-Y') }}
+                    </p>
+                    <a href="{{ path('colis_details', { id: colis.id }) }}" class="btn btn-info btn-sm">
+                        <i class="fas fa-eye"></i> Voir les détails
+                    </a>
+                    <button class="btn btn-success btn-sm" onclick="changeStatus({{ colis.id }}, '{{ colis.statut }}')">
+                        <i class="fas fa-sync-alt"></i> Changer le statut
+                    </button>
+                    <div class="card-info clearfix mt-3">
+                        <div class="post-left">
+                            <ul>
+                                <li>
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span>Dernière mise à jour : --------</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="post-right">
+                            <a href="#"><i class="far fa-heart"></i> Favoris</a>
+                            <a href="#"><i class="fas fa-comment"></i> 5 Commentaires</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

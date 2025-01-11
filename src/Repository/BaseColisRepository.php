@@ -32,20 +32,24 @@ class BaseColisRepository extends ServiceEntityRepository
 
 
 
-    //    /**
-    //     * @return BaseColis[] Returns an array of BaseColis objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('b.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+
+    public function findByFiltre($client)
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.destinateurs = :user')
+            ->setParameter('user', $client)
+            ->orderBy('CASE
+        WHEN c.statut = \'Arrivé\' THEN 1
+         WHEN c.statut = \'En transit\' THEN 2
+          WHEN c.statut = \'Expédié\' THEN 3
+           WHEN c.statut = \'Retenu en douane\' THEN 4
+          WHEN c.statut = \'En préparation\' THEN 5
+        WHEN c.statut = \'Livré\' THEN 6 
+        ELSE 7
+    END', 'ASC')
+            ->setMaxResults(30)
+            ->getQuery()->getResult();
+    }
 
     //    public function findOneBySomeField($value): ?BaseColis
     //    {

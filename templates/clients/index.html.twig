@@ -1,0 +1,130 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Hello HomeController!
+{% endblock %}
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/plugins/morris/morris.css" />
+  <style>
+    .grid-card {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 15px;
+      background: #fff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .grid-card .card-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .grid-card p {
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .grid-card .btn {
+      margin-right: 10px;
+    }
+  </style>
+{% endblock %}
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="row">
+        <div class="col-md-6 col-sm-6 col-lg-6 col-xl-6">
+          <div class="dash-widget dash-widget5">
+            <span class="dash-widget-icon bg-primary"><i class="fa fa-calculator" aria-hidden="true"></i></span>
+            <div class="dash-widget-info">
+              <h3>0</h3>
+              <input type="hidden" id="ventes" value="0" />
+              <span>Colis en attente</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-sm-6 col-lg-6 col-xl-6">
+          <div class="dash-widget dash-widget5">
+            <span class="dash-widget-icon bg-info"><i class="fa fa-calculator" aria-hidden="true"></i></span>
+            <div class="dash-widget-info">
+              <h3>0</h3>
+              <input type="hidden" id="achats" value="0" />
+              <span>Colis Recu</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-lg-12">
+          <div class="row">
+            {% for colis in colis %}
+              <div class="col-sm-6 col-md-6 col-lg-4">
+                <div class="card grid-card">
+                  <div class="card-content">
+                    <h5 class="card-title"><i class="fas fa-box"></i> Colis: #{{ colis.numeroSuivi }}</h5>
+                    <p>
+                      <strong>Statut :</strong> {{ colis.statut }}<br />
+                      <strong>Date :</strong> {{ colis.dateReceptions ? colis.dateReceptions|date('d-m-Y') }}<br />
+                      <strong>Poids :</strong> {{ colis.poidsVolumeTotal }} kg<br />
+                      <strong>Prix :</strong> {{ colis.fraisExpeditions }} FCFA<br />
+                      <strong>Paiement :</strong> {{ colis.statutPaiements }}<br />
+                      <strong>Nombre colis :</strong> {{ colis.unites }} <br />
+                      <strong>Type d'expédition :</strong> {{ colis.typeExpeditions }}
+                    </p>
+                    <a href="{{ path('colis_details', { url: colis.url }) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> Voir les détails</a>
+                    <button class="btn btn-success btn-sm" onclick="changeStatus({{ colis.fraisExpeditions }}, '{{ colis.statut }}')"><i class="fas fa-sync-alt"></i> Payer par Orange Money</button>
+                    <div class="card-info clearfix mt-3">
+                      <div class="post-left">
+                        <ul>
+                          <li>
+                            <i class="far fa-calendar-alt"></i>
+                            <span>Dernière mise à jour :..............</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Orange Money Payment -->
+  <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="paymentModalLabel">Payer par Orange Money</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Information about the payment -->
+          <p>
+            <strong>Montant:</strong> <span id="montant"></span> 
+          </p>
+          <p>
+            <strong>Frais:</strong> <span id="frais"></span> 
+          </p>
+          <p>
+            <strong>Total:</strong> <span id="total"></span> 
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+          <button type="button" class="btn btn-success" id="payerButton">Payer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/moment.min.js"></script>
+   <script type="text/javascript" src="{{ domaine }}/assets/js/paiements.js"></script>
+{% endblock %}
