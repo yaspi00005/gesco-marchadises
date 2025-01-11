@@ -2,8 +2,11 @@
 
 namespace App\Controller;
 
+use App\Controller\config\Configom;
 use App\Entity\BaseColis;
+use App\Entity\Om;
 use App\Repository\BaseColisRepository;
+use App\Repository\OmRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 #[Route('/suivi-colis')]
 class ClientsController extends AbstractController
@@ -90,7 +93,7 @@ class ClientsController extends AbstractController
             'telephone_chine' => '0086 137 98 19 16 52, 0086 186 17 34 54 58',
             'telephone_mali' => '(00223)79 43 38 30',
             'infos' => 'AIR CARGO CHINE- MALI BKO-MLI AD',
-            'warning' => '外包装必须备注客户的姓名和电话' // Ceci est le texte en chinois, qui signifie que l\'emballage doit mentionner le nom et le téléphone du client.
+            'warning' => '外包装必须备注客户的姓名和电话 ()' // Ceci est le texte en chinois, qui signifie que l\'emballage doit mentionner le nom et le téléphone du client.
         ];
         return $this->render('clients/fiches.html.twig', [
             'client' => $client,
@@ -104,7 +107,7 @@ class ClientsController extends AbstractController
     public function exportFicheClient(UserRepository $clientRepository): Response
     {
         $client = $clientRepository->find($this->getUser());
-      
+
 
         if (!$client) {
             throw $this->createNotFoundException('Client introuvable');
@@ -116,7 +119,7 @@ class ClientsController extends AbstractController
             'telephone_chine' => '0086 137 98 19 16 52, 0086 186 17 34 54 58',
             'telephone_mali' => '(00223)79 43 38 30',
             'infos' => 'AIR CARGO CHINE- MALI BKO-MLI AD',
-            'warning' => '外包装必须备注客户的姓名和电话' 
+            'warning' => '外包装必须备注客户的姓名和电话'
         ];
         $html = $this->renderView('clients/fiches.Export.html.twig', [
             'client' => $client,
@@ -125,10 +128,14 @@ class ClientsController extends AbstractController
 
         $pdfOptions = new Options();
         $pdfOptions->set('defaultFont', 'Arial');
+        $pdfOptions->set('isHtml5ParserEnabled', true);
+        $pdfOptions->set('isRemoteEnabled', true);
+
         $dompdf = new Dompdf($pdfOptions);
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A5', 'portrait');
         $dompdf->render();
+        $dompdf->stream("document.pdf", ["Attachment" => false]);
 
         return new Response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
@@ -137,39 +144,46 @@ class ClientsController extends AbstractController
     }
 
 
-    /**
-     * @Route("/paiement/om/{OrderId}", name="payementOmSos", methods={"GET"})
-     */
-    /*  public function payementOm(SosBase $sosBase, SosHistoriqueOmRepository $om, Request $request): Response
-    {
-        $paiement = new SosHistoriqueOm();
-        if ($sosBase) {
 
-            $order_id  = $sosBase->getAnnees() . $sosBase->getMontant() . $this->getUser()->getId() . '_' . time();
+ #[Route('/paiement/om/web', name: 'payementOmWeb', methods: ['GET'])]
+public function payementOm(OmRepository $omRepo, BaseColisRepository $basesRepo, Request $request): Response
+{
+    $id = $request->query->get('id'); // Changez en fonction de la méthode d'envoi
+    if (!$id) {
+        return $this->json(['error' => 'ID manquant'], Response::HTTP_BAD_REQUEST);
+    }
 
-            $sosBase->setOrderId($order_id);
-            $this->getDoctrine()->getManager()->Flush();
-            $return = "https://portail.drepaussd.com/Sos/Confirmation/paiement/om/" . $order_id;
-            $cancel = "https://portail.drepaussd.com/Sos/Confirmation/paiement/om/" . $order_id;
-            $notif = "https://portail.drepaussd.com/Sos/Confirmation/paiement/om/" . $order_id;
-            $osms = new Configom();
-            $response = $osms->getTokenFromConsumerKey();
-            $osms->setVerifyPeerSSL(false);
+    $base = $basesRepo->find($id);
+    if (!$base) {
+        return $this->json(['error' => 'Colis introuvable'], Response::HTTP_NOT_FOUND);
+    }
 
-            $response = $osms->payement($order_id, $sosBase->getMontant(), $return, $cancel, $notif);
-            if (empty($response['error'])) {
-                $paiement->setOrderId($order_id);
-                $paiement->setMontant($sosBase->getMontant());
-                $paiement->setDateenregistrement(new \DateTime());
-                $paiement->setTelephone(78478742);
-                $paiement->setPayToken($response['pay_token']);
-                $om->add($paiement, true);
-                return new RedirectResponse($response['payment_url']);
-            } else {
-                echo $response['error'];
-            }
-        }
-        return $this->json(['property' => 'value'], 200);
-        //return $this->redirectToRoute('ForfaitValidation', [], Response::HTTP_SEE_OTHER);
-    } */
+    $montant = $base->getFraisExpeditions() * 1.01;
+    $orderId = $base->getNumeroSuivi();
+
+    $returnUrl = "https://portail.drepaussd.com/Sos/Confirmation/paiement/om/{$orderId}";
+    $cancelUrl = $returnUrl;
+    $notifUrl = $returnUrl;
+
+    $osms = new Configom();
+    $osms->setVerifyPeerSSL(true); // Activez SSL pour la sécurité
+    $response = $osms->payement($orderId, $montant, $returnUrl, $cancelUrl, $notifUrl);
+
+    if (!empty($response['error'])) {
+        return $this->json(['error' => $response['error']], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+    // Enregistrer le paiement dans la base de données
+    $paiement = new Om();
+    $paiement->setOrderNum($orderId);
+    $paiement->setOrderNum($orderId);
+    $paiement->setMontant($montant);
+    $paiement->setDateOperations(new \DateTime());
+    $paiement->setPayToken($response['pay_token']);
+    $omRepo->add($paiement, true);
+
+    // Rediriger vers l'URL de paiement
+    return new RedirectResponse($response['payment_url']);
+}
+
 }

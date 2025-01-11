@@ -11,7 +11,7 @@
       .container {
         border: 1px solid #000;
         padding: 20px;
-        width: 300px;
+        width: 100%;
         text-align: left;
       }
       .logo {
@@ -44,7 +44,8 @@
     <div class="container">
       <!-- Entête : Informations du Transitaire -->
       <div class="transitaire-info">
-        <img src="{{ asset('assets/img/logo_.jpeg') }}" alt="Logo" class="logo" />
+        <!-- Logo du transitaire -->
+        <img src="{{ asset('assets/img/logo_air.jpg') }}" alt="Logo" class="logo" />
         <p>
           <strong>{{ transitaire.nom }}</strong>
         </p>
@@ -60,15 +61,16 @@
       <!-- Informations du Client -->
       <div class="client-info">
         <p>
-          <strong>Nom :</strong>{{ client.nom }}
+          <strong>Nom :</strong> {{ client.nom }}
         </p>
         <p>
-          <strong>Prénom :</strong>{{ client.prenom }}
+          <strong>Prénom :</strong> {{ client.prenom }}
         </p>
         <p>
-          <strong>Téléphone :</strong>{{ client.usename }}
+          <strong>Téléphone :</strong> {{ client.usename }}
         </p>
-        <img src="{{ asset('uploads/') }}{{ client.qrCodePath }}" alt="QR Code" class="qr-code" />
+        <!-- QR Code -->
+        <img src="{{ asset('uploads/' ~ client.qrCodePath) }}" alt="QR Code" class="qr-code" />
       </div>
 
       <!-- Adresse de Livraison en Chine -->
@@ -81,7 +83,7 @@
       <!-- Avertissement pour l'emballage -->
       <div class="warning">
         <p>
-          <strong>Avertissement :</strong>{{ transitaire.warning }}
+          <strong>Avertissement :</strong> {{ transitaire.warning }}
         </p>
       </div>
     </div>

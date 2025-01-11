@@ -75,7 +75,7 @@
                       <strong>Type d'expédition :</strong> {{ colis.typeExpeditions }}
                     </p>
                     <a href="{{ path('colis_details', { url: colis.url }) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> Voir les détails</a>
-                    <button class="btn btn-success btn-sm" onclick="changeStatus({{ colis.fraisExpeditions }}, '{{ colis.statut }}')"><i class="fas fa-sync-alt"></i> Payer par Orange Money</button>
+                    <button class="btn btn-success btn-sm" onclick="changeStatus({{ colis.fraisExpeditions }}, '{{ colis.id }}')"><i class="fas fa-sync-alt"></i> Payer par Orange Money</button>
                     <div class="card-info clearfix mt-3">
                       <div class="post-left">
                         <ul>
@@ -107,14 +107,15 @@
         <div class="modal-body">
           <!-- Information about the payment -->
           <p>
-            <strong>Montant:</strong> <span id="montant"></span> 
+            <strong>Montant:</strong> <span id="montant"></span>
           </p>
           <p>
-            <strong>Frais:</strong> <span id="frais"></span> 
+            <strong>Frais:</strong> <span id="frais"></span>
           </p>
           <p>
-            <strong>Total:</strong> <span id="total"></span> 
+            <strong>Total:</strong> <span id="total"></span>
           </p>
+          <input type="text" id="colisId" value="0" />
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -126,5 +127,5 @@
 {% endblock %}
 {% block javascripts %}
   <script type="text/javascript" src="{{ domaine }}/assets/js/moment.min.js"></script>
-   <script type="text/javascript" src="{{ domaine }}/assets/js/paiements.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/paiements.js"></script>
 {% endblock %}

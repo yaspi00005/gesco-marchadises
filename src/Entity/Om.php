@@ -36,6 +36,9 @@ class Om
     #[ORM\JoinColumn(nullable: false)]
     private ?BaseColis $colis = null;
 
+    #[ORM\Column]
+    private ?int $montant = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -121,6 +124,18 @@ class Om
     public function setColis(?BaseColis $colis): static
     {
         $this->colis = $colis;
+
+        return $this;
+    }
+
+    public function getMontant(): ?int
+    {
+        return $this->montant;
+    }
+
+    public function setMontant(int $montant): static
+    {
+        $this->montant = $montant;
 
         return $this;
     }

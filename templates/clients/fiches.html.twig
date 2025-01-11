@@ -11,7 +11,7 @@
     .container {
       border: 1px solid #000;
       padding: 15px;
-      width: 300px;
+      width: 600px;
       text-align: center;
     }
     .logo {
@@ -88,7 +88,7 @@
                   <strong>Prénom :</strong>{{ client.prenom }}
                 </p>
                 <p>
-                  <strong>Téléphone :</strong>{{ client.usename }}
+                  <strong>Téléphone :</strong>(00223) {{ client.usename }}
                 </p>
                 <img src="{{ asset('uploads/') }}{{ client.qrCodePath }}" alt="QR Code" class="qr-code" />
               </div>
