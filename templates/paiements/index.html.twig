@@ -50,7 +50,7 @@
                       <td>{{ expedition.destinations }}</td>
                       <td>{{ expedition.montantTotal|number_format(0, '.', ',') }}</td>
                       <td>{{ expedition.montantEncaisses|number_format(0, '.', ',') }}</td>
-                      <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('Y-m-d') : '' }}</td>
+                      <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('d-m-Y') : '' }}</td>
                       <td>
                         <a href="{{ path('liste_paiement', { numeroExpeditions: expedition.numeroExpeditions }) }}">Détail</a>
                       </td>

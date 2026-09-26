@@ -79,7 +79,7 @@
           <button type="submit" class="btn btn-primary btn-sm mt-2">Mettre à jour</button>
         </form>
       </td>
-      <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('Y-m-d') : '' }}</td>
+      <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('d-m-Y') : '' }}</td>
      
     </tr>
   {% endfor %}

@@ -92,19 +92,21 @@
       </div>
 
       <div class="content-page p-4">
+       {% include "alert.html.twig" %}
+
         <div class="alert"></div>
 
         <!-- Section pour afficher les détails -->
         <div id="detailsContent" class="mt-4 text-center">
+
           <div class="spinner-border" role="status">
             <span class="visually-hidden">Chargement...</span>
           </div>
         </div>
 
         <!-- Bouton pour imprimer -->
-        {% if paiements.montantPaye == 0 %}
-            <button class="btn btn-primary btn-sm encaisser-btn encaisser-btn-recu" data-montant="{{ paiements.fraisExpeditions }}" data-id="{{ paiements.id }}">Encaisser</button>
-
+        {% if paiements.montantPaye == 0 and paiements.remises == 0 %}
+            <button class="btn btn-primary btn-sm encaisser-btn encaisser-btn-recu" data-sahel="{{ sahel }}"  data-montant="{{ paiements.fraisExpeditions }}" data-id="{{ paiements.id }}">Encaisser</button>
         {% endif %}
        <button class="btn btn-warning mt-3">        <a href="{{ path('generate_pdf', { 'colisId': colis}) }}" class="btn btn-warning btn-sm ">Exporter en PDF</a>
 </button> 
@@ -138,13 +140,22 @@
             <!-- Remise -->
             <div class="form-group">
               <label>Remise (€)</label>
-              <input type="number" class="form-control" id="remise" name="remise" min="0" value="0" />
+              <input type="text" class="form-control" id="remise" name="remise" min="0" value="0" />
             </div>
 
             <!-- Montant Restant -->
             <div class="form-group">
               <label>Montant Restant :</label>
               <input type="text" class="form-control" id="montantRestant" readonly />
+            </div>
+
+            <div class="form-group">
+              <label>Point Sahel  Disponible :</label>
+              <input type="text" class="form-control"  value ="{{ sahel  }}"  id="sahel" readonly />
+            </div>
+             <div class="form-group">
+              <label>Appliquer la remise :</label>
+              <input type="checkbox" class="form-control" id="SahelAppliquer"   />
             </div>
 
             <!-- Type de Paiement -->
@@ -172,6 +183,27 @@
 {% endblock %}
 
 {% block javascripts %}
-  <script type="text/javascript" src="{{ domaine }}/assets/js/recus.js"></script>
+   <script type="text/javascript" src="{{ domaine }}/assets/js/recus.js"></script>
    <script type="text/javascript" src="{{ domaine }}/assets/js/base-colis.js"></script>
+
+   <script>
+  function appliquerSahel() {
+    const isChecked = $('#SahelAppliquer').is(':checked');
+    const sahelValue = ($('#sahel').val() || '0').toString().trim();
+
+    if (isChecked) {
+      $('#remise').val(sahelValue).prop('readonly', true);
+    } else {
+      $('#remise').val(0).prop('readonly', false);
+    }
+  }
+
+  $(document).ready(function () {
+    // au chargement
+    appliquerSahel();
+
+    // au clic sur la checkbox
+    $('#SahelAppliquer').on('change', appliquerSahel);
+  });
+</script>
 {% endblock %}

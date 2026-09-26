@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Paiements;
 use App\Form\PaiementsType;
 use App\Repository\BaseColisRepository;
+use App\Repository\BasesSahelRepository;
 use App\Repository\ExpeditionsRepository;
 use App\Repository\PaiementsRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -57,6 +58,7 @@ final class PaiementsController extends AbstractController
                 'paye' => $montantPaye,
                 'remises' => $colis->getRemises(),
                 'restant' => max(0, $colis->getFraisExpeditions() - $montantPaye - $colis->getRemises()),
+                'id' => $colis->getId(),
             ];
         }
 
@@ -177,5 +179,176 @@ final class PaiementsController extends AbstractController
         }, $paiements);
 
         return new JsonResponse(['paiements' => $result]);
+    }
+
+    #[Route('/paiement/update', name: 'paiement_update', methods: ['POST'])]
+    public function updatePaiement(Request $request, EntityManagerInterface $em, BaseColisRepository $colisRepository): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $colis = $colisRepository->find($data['id']);
+
+        if (!$colis) {
+            return new JsonResponse(['success' => false, 'message' => 'Colis introuvable'], 404);
+        }
+
+        $colis->setFraisExpeditions((int) $data['montantTotal']);
+        /*  $colis->setRemises((float) $data['remise']);
+        $colis->setMontantPaye((float) $data['montantDejaPaye']); */
+
+
+
+
+
+        // Supprimer les anciens paiements liés à ce colis
+        foreach ($colis->getPaiements() as $ancienPaiement) {
+            $em->remove($ancienPaiement);
+            $em->flush();
+        }
+
+        // Créer un nouveau paiement
+        $paiement = new Paiements();
+        $paiement->setColis($colis);
+        $paiement->setRemises($data['remise']);
+        $paiement->setMontants($data['montantDejaPaye']);
+        $paiement->setModePaiement('Espèces');
+        $paiement->setDatePaiements(new \DateTime());
+        $paiement->setCaissier($this->getUser());
+        $colis->setRemises($data['remise']);
+        $colis->setMontantPaye($data['montantDejaPaye']);
+        $em->persist($paiement);
+        $em->flush();
+
+        return new JsonResponse(['success' => true, 'message' => 'Paiement mis à jour avec succès']);
+    }
+
+    #[Route('/bonus/info/{colisId}', name: 'bonus_info', methods: ['GET'])]
+    public function bonusInfo(
+        int $colisId,
+        BaseColisRepository $colisRepo
+    ): JsonResponse {
+        $colis = $colisRepo->find($colisId);
+        if (!$colis) {
+            return new JsonResponse(['error' => 'Colis introuvable'], 404);
+        }
+
+        // Bonus disponible désormais porté par clients.sahel
+        $bonusDisponible = (float) $colis->getClients()->getSahel();
+
+        $frais  = (float) $colis->getFraisExpeditions();
+        $deja   = (float) $colis->getMontantPaye();
+        $remise = (float) $colis->getRemises();
+        $restant = max(0.0, $frais - $deja - $remise);
+
+        return new JsonResponse([
+            'client'          => trim($colis->getClients()->getPrenom() . ' ' . $colis->getClients()->getNom()),
+            'numero'          => (string) $colis->getNumeroSuivi(),
+            'frais'           => $frais,
+            'dejaPaye'        => $deja,
+            'restant'         => $restant,
+            'bonusDisponible' => max(0.0, $bonusDisponible),
+        ]);
+    }
+
+    #[Route('/bonus/appliquer', name: 'bonus_apply', methods: ['POST'])]
+    public function bonusApply(
+        Request $request,
+        EntityManagerInterface $em,
+        BaseColisRepository $colisRepo,
+        BasesSahelRepository $sahelRepo
+    ): JsonResponse {
+        $data = json_decode($request->getContent(), true) ?? [];
+        $colisId = (int)($data['colisId'] ?? 0);
+
+        $colis = $colisRepo->find($colisId);
+        if (!$colis) {
+            return new JsonResponse(['success' => false, 'message' => 'Colis introuvable'], 404);
+        }
+
+        $client = $colis->getClients();
+        if (!$client) {
+            return new JsonResponse(['success' => false, 'message' => 'Client introuvable'], 404);
+        }
+
+        // Montants actuels
+        $frais   = (float) $colis->getFraisExpeditions();
+        $deja    = (float) $colis->getMontantPaye();
+        $remise  = (float) $colis->getRemises();
+        $restant = max(0.0, $frais - $deja - $remise);
+
+        // Solde de bonus sur la fiche client (clients.sahel)
+        $bonusDisponible = (float) $client->getSahel();
+
+        if ($restant <= 0.0 || $bonusDisponible <= 0.0) {
+            return new JsonResponse(['success' => false, 'message' => 'Aucun bonus applicable'], 200);
+        }
+
+        // Montant appliqué = min(restant, bonus dispo)
+        $aAppliquer = (float) min($restant, $bonusDisponible);
+        if ($aAppliquer <= 0.0) {
+            return new JsonResponse(['success' => false, 'message' => 'Montant non applicable'], 200);
+        }
+
+        // 1) Appliquer en remise sur le colis
+        $colis->setRemises($remise + $aAppliquer);
+        $em->persist($colis);
+
+        // 2) Consommer les lignes de bases_sahel (statut = 0) en FIFO jusqu'à couvrir $aAppliquer
+        $conn = $em->getConnection();
+
+        // Récupère les lignes non consommées pour ce client
+        $rows = $conn->fetchAllAssociative(
+            'SELECT id, sahel 
+           FROM bases_sahel 
+          WHERE clients_id = :cid AND statut = 0
+          ORDER BY date_operations ASC, id ASC',
+            ['cid' => (int)$client->getId()]
+        );
+
+        $resteAConsommer = (int) $aAppliquer;
+
+        foreach ($rows as $row) {
+            if ($resteAConsommer <= 0) break;
+
+            $ligneId = (int)$row['id'];
+            $montant = (int)$row['sahel'];
+
+            if ($montant <= $resteAConsommer) {
+                // Consommation totale de la ligne : statut = 1
+                $conn->update('bases_sahel', ['statut' => 1], ['id' => $ligneId]);
+                $resteAConsommer -= $montant;
+            } else {
+                // Consommation partielle : on réduit la ligne (reste non consommée)
+                $conn->update('bases_sahel', ['sahel' => $montant - $resteAConsommer], ['id' => $ligneId]);
+                $resteAConsommer = 0;
+            }
+        }
+
+        // 3) Décrémenter le solde du client
+        $client->setSahel($bonusDisponible - $aAppliquer);
+        // Si tu veux forcer à 0 quoi qu'il arrive (même si aAppliquer < bonusDisponible), remplace par :
+        // $client->setSahel(0);
+        $em->persist($client);
+
+        // 4) Enregistrer un "paiement" de type remise via bonus
+        $paiement = new Paiements();
+        $paiement->setColis($colis);
+        $paiement->setMontants(0);                              // pas d'encaissement en numéraire
+        $paiement->setRemises((int) $aAppliquer);               // remise = bonus appliqué
+        $paiement->setModePaiement($data['typePaiement'] ?? 'BONUS'); // ou impose 'BONUS'
+        $paiement->setDatePaiements(new \DateTime());
+        $paiement->setCaissier($this->getUser());
+
+        $em->persist($paiement);
+
+        // Sauvegarde
+        $em->flush();
+
+        return new JsonResponse([
+            'success'      => true,
+            'applique'     => $aAppliquer,
+            'restant'      => max(0.0, $restant - $aAppliquer),
+            'bonusClient'  => max(0.0, $bonusDisponible - $aAppliquer), // ou 0 si tu forces
+        ]);
     }
 }

@@ -65,8 +65,8 @@
               <h3>Informations de l'expédition</h3>
               <label for="base_colis_expeditions">Expéditions</label>
               {{ form_widget(form.expeditions) }}
-              <label for="base_colis_typeExpeditions">Type Expédition</label>
-              {{ form_widget(form.typeExpeditions) }}
+             {#  <label for="base_colis_typeExpeditions">Type Expédition</label>
+              {{ form_widget(form.typeExpeditions) }} #}
 
               <label for="base_colis_destinateurs">Envoyeur</label>
               {{ form_widget(form.clients) }}
@@ -76,6 +76,9 @@
 
               <label for="base_colis_destinateurs">Téléphone du destinataire</label>
               {{ form_widget(form.destinateursTelephones) }}
+
+              <label for="base_colis_destinateurs">Nombre de colis</label>
+              {{ form_widget(form.unites) }}
             </div>
 
             <div id="colisContainer">
@@ -106,10 +109,10 @@
                   <label for="valeur">Photo du colis</label>
                   <input type="file" id="base_colis_details_photos" name="photos[]" />
                 </div>
-                <button type="button" class="remove-colis">Supprimer ce colis</button>
+                 <button type="button" class="remove-colis">Supprimer ce colis</button> 
               </div>
             </div>
-            <button type="button" id="addColis">Ajouter un autre colis</button>
+             <button type="button" id="addColis">Ajouter un autre colis</button> 
             <button type="submit">Enregistrer</button>
             {{ form_end(form) }}
           </div>

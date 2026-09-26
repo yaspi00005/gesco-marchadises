@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit BasesSahel{% endblock %}
+
+{% block body %}
+    <h1>Edit BasesSahel</h1>
+
+    {{ include('bases_sahel/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_bases_sahel_index') }}">back to list</a>
+
+    {{ include('bases_sahel/_delete_form.html.twig') }}
+{% endblock %}

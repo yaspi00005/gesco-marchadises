@@ -26,11 +26,11 @@
             </tr>
             <tr>
                 <th>DateExpeditions</th>
-                <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('Y-m-d') : '' }}</td>
+                <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('d-m-Y') : '' }}</td>
             </tr>
             <tr>
                 <th>DateArrive</th>
-                <td>{{ expedition.dateArrive ? expedition.dateArrive|date('Y-m-d') : '' }}</td>
+                <td>{{ expedition.dateArrive ? expedition.dateArrive|date('d-m-Y') : '' }}</td>
             </tr>
         </tbody>
     </table>

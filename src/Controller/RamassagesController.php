@@ -10,6 +10,7 @@ use App\Form\BaseColisDetailsType;
 use App\Form\BaseColisType;
 use App\Form\ClientsType;
 use App\Repository\BaseColisRepository;
+use App\Repository\BasesSahelRepository;
 use App\Repository\PaiementsRepository;
 use App\Repository\TypeMarchandisesRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,6 +25,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
 #[Route('/ramassages')]
@@ -63,18 +65,37 @@ class RamassagesController extends AbstractController
     }
 
     #[Route('/confirmation/enregistrement/{numeroSuivi}', name: 'conf_enregistrement', methods: ['GET'])]
-    public function recu($numeroSuivi,BaseColisRepository $colisRepository): Response
+    public function recu($numeroSuivi, BaseColisRepository $colisRepository, BasesSahelRepository $sahels): Response
     {
 
+        $colis = $colisRepository->findOneBy(['numeroSuivi' => $numeroSuivi]);
+        $sahel = $sahels->findBy(['dateOperations' => $colis->getDateReceptions(), 'Clients' => $colis->getClients()]);
+
+        $sumSahel = [];
+
+        foreach ($sahel as  $value) {
+            array_push($sumSahel, $value->getSahel());
+        }
+
+        $SahelAccorde = $colis->getClients()->getSahel() - array_sum($sumSahel);
+
+        if ($SahelAccorde > 0) {
+            $remise = $SahelAccorde;
+            # code...
+        } else {
+            $remise = 0;
+        }
+
         return $this->render('base_colis/recus.html.twig', [
-            "colis" => $numeroSuivi ,
-            'paiements' => $colisRepository->findOneBy(['numeroSuivi'=> $numeroSuivi])
+            "colis" => $numeroSuivi,
+            'paiements' => $colis,
+            'sahel' => $remise,
 
         ]);
     }
 
     #[Route('/colis/new', name: 'app_base_colis_new', methods: ['GET', 'POST'])]
-    public function new_colis(TokenGeneratorInterface $tokenGenerator, Request $request, TypeMarchandisesRepository $typeMarchandises, BaseColisRepository $colis, EntityManagerInterface $entityManager, SluggerInterface $slugger, #[Autowire('%kernel.project_dir%/public/uploads/')] string $photoDirectory): Response
+    public function new_colis(SessionInterface $session, TokenGeneratorInterface $tokenGenerator, Request $request, TypeMarchandisesRepository $typeMarchandises, BaseColisRepository $colis, EntityManagerInterface $entityManager, SluggerInterface $slugger, #[Autowire('%kernel.project_dir%/public/uploads/')] string $photoDirectory): Response
     {
         $baseColi = new BaseColis();
         $form = $this->createForm(BaseColisType::class, $baseColi);
@@ -89,8 +110,44 @@ class RamassagesController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $id = $colis->findOneBy([],['id' => 'DESC' ]);
+
+            $id = $colis->findOneBy([], ['id' => 'DESC']);
             $baseColi->setDateReceptions(new \DateTime());
+
+            $poidsVolumes = $request->request->all('poidsVolume'); // e.g. ['1.2','3.4',…]
+            // On s’assure d’avoir un tableau de floats
+            $poidsFloats = array_map('floatval', $poidsVolumes);
+            $poidsTotal = array_sum($poidsFloats);
+
+            // Récupère l'ID du destinataire
+            $destId = $baseColi->getClients()->getId();
+
+            // Si la session contient déjà ce destinataire, on bloque
+            if ($session->get('last_dest_id') === $destId && $session->get('last_dest_total_weight') === $poidsTotal) {
+
+
+
+                // 2) On cherche en base le dernier colis (par id décroissant) pour ce destinataire
+                $lastColi = $colis->findOneBy(
+                    ['clients' => $destId],
+                    ['id' => 'DESC']
+                );
+
+                // 3) Si on en trouve un, on redirige immédiatement vers sa confirmation
+                if ($lastColi) {
+                    $this->addFlash(
+                        'warning',
+                        'Vous venez déjà d’enregistrer un colis pour ce destinataire.'
+                    );
+                    return $this->redirectToRoute(
+                        'conf_enregistrement',
+                        ['numeroSuivi' => $lastColi->getNumeroSuivi()],
+                        Response::HTTP_SEE_OTHER
+                    );
+                }
+            }
+
+
 
 
             $mois = $baseColi->getDateReceptions()->format('m');
@@ -108,7 +165,7 @@ class RamassagesController extends AbstractController
             $baseColi->setExpediteurs($this->getUser());
             $codeRetrait = strtoupper(substr(uniqid('COL', true), 0, 10));
             $baseColi->setCode($codeRetrait);
-            $baseColi->setUnites(count($poidsVolume));
+            //   $baseColi->setUnites(count($poidsVolume));
             $numeroSuivi = $mois . $annee . '-' . $id->getId() + 1 . '-' . $colis->countByColi(null, null)[0][1] + 1;
             $baseColi->setNumeroSuivi($numeroSuivi);
 
@@ -133,7 +190,7 @@ class RamassagesController extends AbstractController
                         $originalFilename = pathinfo($_FILES['photos']['name'][$key], PATHINFO_FILENAME);
                         $extension = pathinfo($_FILES['photos']['name'][$key], PATHINFO_EXTENSION);
                         $safeFilename = preg_replace('/[^a-zA-Z0-9-_]/', '', $originalFilename);
-                        $newFilename = $safeFilename .'_'.uniqid(). '.' . $extension;
+                        $newFilename = $safeFilename . '_' . uniqid() . '.' . $extension;
 
                         if (move_uploaded_file($_FILES['photos']['tmp_name'][$key], $photoDirectory . $newFilename)) {
                             $baseColisDetail->setPhoto($newFilename);
@@ -163,7 +220,8 @@ class RamassagesController extends AbstractController
             $baseColi->setDateReceptions(new \DateTime());
             $entityManager->persist($baseColi);
             $entityManager->flush();
-
+            $session->set('last_dest_id', $destId);
+            $session->set('last_dest_total_weight', $poidsTotal);
             /*  $messageSms = "Bonjour {$client->getNom()}, votre colis est enregistré avec le numéro de suivi : {$numeroSuivi}. Merci !";
             $smsService->sendSms($telephone, $messageSms); */
 
@@ -222,7 +280,7 @@ class RamassagesController extends AbstractController
 
 
     #[Route('/colis/details/{numeroSuivi}/ajax',   name: 'colis_detailss', methods: ['GET'])]
-    public function getColisDetails(BaseColisRepository $colisRepository, $numeroSuivi): JsonResponse
+    public function getColisDetails(BaseColisRepository $colisRepository, $numeroSuivi, BasesSahelRepository $sahels): JsonResponse
     {
         $colis = $colisRepository->findOneBy(['numeroSuivi' => $numeroSuivi]);
 
@@ -231,6 +289,25 @@ class RamassagesController extends AbstractController
         }
 
         // dd($colis);
+
+        /*   $sahel = $sahels->findBy(['date_operations' => $colis->getDateReceptions(), 'clients_id' => $colis->getClients()]);
+
+        $sumSahel = [];
+
+        foreach ($sahel as  $value) {
+            array_push($sumSahel, $value->getSahel());
+        }
+
+        $SahelAccorde = $colis->getClients()->getSahel() - array_sum($sumSahel);
+
+        if ($SahelAccorde > 0) {
+            $remise = $SahelAccorde;
+            # code...
+        } else {
+            $remise = 0;
+        } */
+
+
         return $this->json([
             'numeroSuivi' => $colis->getNumeroSuivi(),
             'codeRetrait' => $colis->getCode(),
@@ -240,6 +317,7 @@ class RamassagesController extends AbstractController
             'TypeExpedition' => $colis->getTypeExpeditions(),
             'dateReception' => $colis->getDateReceptions()->format('d/m/Y'),
             'qrCodePath' => $colis->getQrCodePath(),
+
         ]);
     }
 
@@ -253,6 +331,8 @@ class RamassagesController extends AbstractController
     ): JsonResponse {
         // Récupérer les données envoyées via AJAX
         $data = json_decode($request->getContent(), true);
+
+
 
         if (!isset($data['montantPaye']) || !isset($data['typePaiement']) || !isset($data['remise'])) {
             return new JsonResponse(['error' => 'Données invalides'], Response::HTTP_BAD_REQUEST);
@@ -269,7 +349,21 @@ class RamassagesController extends AbstractController
         $remise = (float) $data['remise']; // Remise appliquée
         $montantRestant = $montantTotal - $montantDejaPaye - $remise; // Nouveau montant restant après remise
         $montantPaye = (float) $data['montantPaye']; // Montant payé
+        $sahelAppliquer = !empty($data['sahelAppliquer']);
+        if ($sahelAppliquer == 1) {
+            $client = $colis->getClients(); // ou getClients() si c'est vraiment ton nom
+            $sahel = (float) $client->getSahel();
 
+            // ne pas dépasser le solde sahel
+            $remise = min($remise, $sahel);
+
+            // MAJ points sahel : sahel = sahel - remise
+            $client->setSahel($sahel - $remise);
+
+            // enregistrer en base
+            $entityManager->persist($client); // optionnel mais safe
+            $entityManager->flush();
+        }
         // Vérification si le montant payé ne dépasse pas le montant restant
         if ($montantPaye > $montantRestant) {
             return new JsonResponse(['error' => 'Le montant payé dépasse le montant restant après remise.'], Response::HTTP_BAD_REQUEST);

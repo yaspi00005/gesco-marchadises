@@ -37,7 +37,7 @@ class BaseColis
     private ?Expeditions $expeditions = null;
 
     #[ORM\Column(length: 100)]
-    private ?string $typeExpeditions = null;
+    private ?string $typeExpeditions = 'Standard';
 
     #[ORM\Column]
     private ?int $fraisExpeditions = 0;
@@ -101,11 +101,18 @@ class BaseColis
     #[ORM\Column]
     private ?int $remises = 0;
 
+    /**
+     * @var Collection<int, BasesSahel>
+     */
+    #[ORM\OneToMany(targetEntity: BasesSahel::class, mappedBy: 'colis')]
+    private Collection $basesSahels;
+
     public function __construct()
     {
         $this->baseColisDetails = new ArrayCollection();
         $this->paiements = new ArrayCollection();
         $this->oms = new ArrayCollection();
+        $this->basesSahels = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -455,6 +462,36 @@ class BaseColis
     public function setRemises(int $remises): static
     {
         $this->remises = $remises;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, BasesSahel>
+     */
+    public function getBasesSahels(): Collection
+    {
+        return $this->basesSahels;
+    }
+
+    public function addBasesSahel(BasesSahel $basesSahel): static
+    {
+        if (!$this->basesSahels->contains($basesSahel)) {
+            $this->basesSahels->add($basesSahel);
+            $basesSahel->setColis($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBasesSahel(BasesSahel $basesSahel): static
+    {
+        if ($this->basesSahels->removeElement($basesSahel)) {
+            // set the owning side to null (unless already changed)
+            if ($basesSahel->getColis() === $this) {
+                $basesSahel->setColis(null);
+            }
+        }
 
         return $this;
     }

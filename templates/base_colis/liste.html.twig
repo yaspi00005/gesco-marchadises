@@ -99,7 +99,7 @@
                       <td>
                         {{ base_coli.statutPaiements }}
                         {% if base_coli.fraisExpeditions - base_coli.montantPaye - base_coli.remises != 0 %}
-                          <button class="btn btn-primary btn-sm encaisser-btn-pays" data-id="{{ base_coli.id }}" data-montant-total="{{ base_coli.fraisExpeditions }}" data-montant-paye="{{ base_coli.montantPaye }}" data-montant-restant="{{ base_coli.fraisExpeditions - base_coli.montantPaye - base_coli.remises }}">Encaisser</button>
+                          <button class="btn btn-primary btn-sm encaisser-btn-pays" data-id="{{ base_coli.id }}" data-montant-total="{{ base_coli.fraisExpeditions }}" data-montant-paye="{{ base_coli.montantPaye }}" data-montant-restant="{{ base_coli.fraisExpeditions - base_coli.montantPaye - base_coli.remises }}" data-montant-remise="{{ base_coli.remises }}">Encaisser</button>
                         {% endif %}
                       </td>
                       <td>{{ base_coli.remises|number_format(0, '.', ',') }}</td>
@@ -107,7 +107,7 @@
                       <td>{{ base_coli.dateReceptions ? base_coli.dateReceptions|date('d-m-Y') }}</td>
                       <td>{{ base_coli.clients.prenom ~ ' ' ~ base_coli.clients.nom }}</td>
                       <td>
-                        <a href="#">{{ base_coli.expeditions.destinations ~ '-' }}{{ base_coli.expeditions.dateExpeditions ? base_coli.expeditions.dateExpeditions|date('Y-m-d') : '' }}</a>
+                        <a href="#">{{ base_coli.expeditions.destinations ~ '-' }}{{ base_coli.expeditions.dateExpeditions ? base_coli.expeditions.dateExpeditions|date('d-m-Y') : '' }}</a>
                       </td>
                       <td>
                         {% if base_coli.fraisExpeditions - base_coli.montantPaye - base_coli.remises == 0 and base_coli.statut != 'Récupéré' %}
@@ -153,6 +153,12 @@
               <input type="text" class="form-control" id="montantDejaPaye" readonly />
             </div>
 
+            <!-- Remise -->
+            <div class="form-group">
+              <label>Remise (€)</label>
+              <input type="text" class="form-control" id="remise" name="remise" min="0" value="0" readonly />
+            </div>
+
             <!-- Montant Restant (C'est ce montant qui sera payé) -->
             <div class="form-group">
               <label>Montant à Payer :</label>
@@ -176,12 +182,14 @@
           const colisId = this.getAttribute('data-id')
           const montantTotal = parseFloat(this.getAttribute('data-montant-total'))
           const montantDejaPaye = parseFloat(this.getAttribute('data-montant-paye')) || 0
-          const montantRestant = montantTotal - montantDejaPaye
+          const montantRemise = parseFloat(this.getAttribute('data-montant-remise')) || 0
+          const montantRestant = montantTotal - montantDejaPaye - montantRemise
     
           document.getElementById('colisId').value = colisId
           document.getElementById('montantTotal').value = montantTotal.toFixed(2) + ' €'
           document.getElementById('montantDejaPaye').value = montantDejaPaye.toFixed(2) + ' €'
           document.getElementById('montantRestant').value = montantRestant.toFixed(2) + ' €'
+          document.getElementById('remise').value = montantRemise.toFixed(2) + ' €'
     
           $('#paiementModal').modal('show')
         })
@@ -221,38 +229,36 @@
           })
       })
     })
-
-
+    
     document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.recuperer-colis-btn').forEach(button => {
+      document.querySelectorAll('.recuperer-colis-btn').forEach((button) => {
         button.addEventListener('click', function () {
-            const colisId = this.getAttribute('data-url');
-
-            if (confirm("Confirmez-vous que ce colis est récupéré ?")) {
-                fetch(`/pays/base/colis/marquer-recupere/${colisId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("Le colis a été marqué comme récupéré !");
-                        location.reload();
-                    } else {
-                        alert("Erreur : " + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    alert("Impossible de changer le statut.");
-                });
-            }
-        });
-    });
-});
-
+          const colisId = this.getAttribute('data-url')
+    
+          if (confirm('Confirmez-vous que ce colis est récupéré ?')) {
+            fetch(`/pays/base/colis/marquer-recupere/${colisId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  alert('Le colis a été marqué comme récupéré !')
+                  location.reload()
+                } else {
+                  alert('Erreur : ' + data.message)
+                }
+              })
+              .catch((error) => {
+                console.error('Erreur:', error)
+                alert('Impossible de changer le statut.')
+              })
+          }
+        })
+      })
+    })
   </script>
 {% endblock %}

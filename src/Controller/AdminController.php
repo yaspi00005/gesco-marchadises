@@ -52,7 +52,7 @@ class AdminController extends AbstractController
     public function show($id,BaseColisRepository $baseColisRepository): Response
     {
         return $this->render('clients/show.html.twig', [
-            'base_colis' => $baseColisRepository->findBy(['id' => $id ]),
+            'base_colis' => $baseColisRepository->findBy(['clients' => $id ]),
         ]);
     }
 }

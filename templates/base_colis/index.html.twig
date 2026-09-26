@@ -84,7 +84,7 @@
                       <td>EX-{{ expedition.numeroExpeditions }}</td>
                       <td>{{ expedition.modeTransport }}</td>
                       <td>{{ expedition.destinations }}</td>
-                      <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('Y-m-d') : '' }}</td>
+                      <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('d-m-Y') : '' }}</td>
                       <td>
                         <a href="{{ path('app_base_colis_liste', { expedition: expedition.numeroExpeditions }) }}">Détail</a>
                       </td>

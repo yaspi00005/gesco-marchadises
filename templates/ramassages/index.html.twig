@@ -106,7 +106,7 @@
       </p>
       {% if colis.remises != 0 %}
         <p>
-          <strong>Remise accordée :</strong> {{  colis.remises }} €
+          <strong>Remise accordée :</strong> {{ colis.remises }} €
         </p>
       {% endif %}
       <p>
@@ -134,10 +134,17 @@
 
     <!-- Ajout du message de remerciement -->
     <div class="thanks-message">
+      {% if colis.clients.sahel > 0 %}
+        <p>
+           Vous avez cumulé <strong>{{ colis.clients.sahel }} €</strong> de bonus fidélité.
+        </p>
+      {% else %}
+        <p> Commencez à cumuler des bonus dès votre premier envoi !</p>
+      {% endif %}
       <p>
         Merci d'avoir choisi <strong>Sotrama</strong> pour l'expédition de votre colis !
       </p>
-      <p>Nous espérons vous revoir bientôt. </p>
+      <p>Nous espérons vous revoir bientôt.</p>
     </div>
   </body>
 </html>

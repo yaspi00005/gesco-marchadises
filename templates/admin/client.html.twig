@@ -45,6 +45,7 @@
                     <th>Ville</th>
                     <th>Code Postal</th>
                     <th>Pays</th>
+                    <th>Sahel</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -58,6 +59,7 @@
                       <td>{{ client.ville }}</td>
                       <td>{{ client.codePostal }}</td>
                       <td>{{ client.pays }}</td>
+                      <td>{{ client.sahel }}</td>
                       <td style="width: 10%;">
                         <a class="btn btn-sm btn-info" href="{{ path('app_client_expedition', { id: client.id }) }}"><i class="fa fa-eye"></i></a>
                         <button class="btn btn-sm btn-primary edit-client-btn" data-id="{{ client.id }}" data-nom="{{ client.nom }}" data-prenom="{{ client.prenom }}" data-telephone="{{ client.telephone }}" data-adresse="{{ client.adresse }}" data-ville="{{ client.ville }}" data-codepostal="{{ client.codePostal }}" data-pays="{{ client.pays }}" data-toggle="modal" data-target="#editClientModal"><i class="fa fa-edit"></i></button>

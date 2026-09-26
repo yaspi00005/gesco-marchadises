@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Stocks index
+{% endblock %}
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/dataTables.bootstrap4.min.css" />
+{% endblock %}
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Gestion des bonus</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">
+                <a href="">Journal des Bonus</a>
+              </li>
+              <li class="list-inline-item">Journal des bonus</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4 col-3"></div>
+      </div>
+      <div class="content-page">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="table-responsive">
+              <table class="table table-striped m-b-0 datatable">
+                <div class="col-sm-12 col-12 text-right m-b-20"></div>
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Expédition</th>
+                    <th>Frais d'expédition</th>
+                    <th>Bonus</th>
+                    <th>Date</th>
+                    <th>Utilisation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for bases_sahel in bases_sahels %}
+                    <tr>
+                      <td>{{ bases_sahel.clients.prenom  ~' ' ~ bases_sahel.clients.nom ~' ' ~ bases_sahel.clients.telephone }}</td>
+                      <td>{{ bases_sahel.colis.expeditions.dateExpeditions ? bases_sahel.colis.expeditions.dateExpeditions|date('d-m-Y') : '' }}</td>
+                      <td>{{ bases_sahel.colis.fraisExpeditions }}  €</td>
+                      <td>{{ bases_sahel.sahel }} €</td>
+                      <td>{{ bases_sahel.dateOperations ? bases_sahel.dateOperations|date('d-m-Y') : '' }}</td>
+                      <td>
+                        {% if bases_sahel.statut == 1 %}
+                          <span class="badge bg-success">Consommé</span>
+                        {% else %}
+                          <span class="badge bg-warning">Non consommé</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="6" class="text-center">Aucun enregistrement trouvé</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/base-colis.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/dataTables.bootstrap4.min.js"></script>
+{% endblock %}

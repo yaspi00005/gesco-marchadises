@@ -13,6 +13,8 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -22,8 +24,9 @@ class BaseColisType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('typeExpeditions', ChoiceType::class, ['choices' => ['Standard' => 'Standard', 'Express ' => 'Express '], 'placeholder' => 'Choisir'])
+            ->add('typeExpeditions', HiddenType::class)
             ->add('destinateursNom',TextType::class )
+            ->add('unites',NumberType::class )
             ->add('destinateursTelephones',TextType::class )
             ->add('expeditions', EntityType::class, [ 
                 'attr' => ['class' => 'searchInput'],

@@ -88,9 +88,12 @@
                       <td>{{ details.total|number_format(2, ',', ' ') }} €</td>
                       <td>{{ details.paye|number_format(2, ',', ' ') }} €</td>
                       <td>{{ details.remises|number_format(2, ',', ' ') }} €</td>
-                       <td>{{ details.restant|number_format(2, ',', ' ') }} €</td>
+                      <td>{{ details.restant|number_format(2, ',', ' ') }} €</td>
                       <td>
-                        <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#paiementModal{{ colis.id }}">Voir Paiements</button>
+                        <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#paiementModal{{ colis.id }}"><i class="fa fa-eye"></i></button>
+                        <button class="btn btn-primary btn-sm edit-paiement-btn" data-toggle="modal" data-target="#paiementModal" data-id="{{ colis.id }}" data-paiement-id="{{ details.id }}" data-total="{{ colis.fraisExpeditions }}" data-deja="{{ details.paye }}" data-remise="{{ details.remises }}" data-type="type" data-partiel="0"><i class="fa fa-edit"></i></button>
+                        <a href="{{ path('generate_pdf', { colisId: colis.numeroSuivi }) }}" title="Reçu" class="btn btn-primary btn-sm"><i class="fas fa-file-invoice"></i></a>
+                        <button class="btn btn-primary btn-sm edit-paiement-btn" data-toggle="modal" data-target="#applyBonusModal" data-id="{{ colis.id }}"><i class="fa fa-gift"></i></button>
                       </td>
                     </tr>
                   {% else %}
@@ -112,7 +115,7 @@
                   <tbody>
                     {% for encaissement in encaissements_par_caissier %}
                       <tr>
-                        <td>{{ encaissement.prenom ~' '~ encaissement.nom }}</td>
+                        <td>{{ encaissement.prenom ~ ' ' ~ encaissement.nom }}</td>
                         <td>{{ encaissement.total|number_format(2, ',', ' ') }} €</td>
                       </tr>
                     {% else %}
@@ -155,7 +158,7 @@
                     <td>{{ paiement.montants|number_format(2, ',', ' ') }} €</td>
                     <td>{{ paiement.modePaiement }}</td>
                     <td>{{ paiement.datePaiements|date('d/m/Y') }}</td>
-                    <td>{{ paiement.caissier.prenom ~' '~ paiement.caissier.nom }}</td>
+                    <td>{{ paiement.caissier.prenom ~ ' ' ~ paiement.caissier.nom }}</td>
                   </tr>
                 {% else %}
                   <tr>
@@ -168,10 +171,270 @@
         </div>
       </div>
     </div>
+    <!-- Modal Paiement -->
+    <div class="modal fade" id="paiementModal" tabindex="-1" role="dialog" aria-labelledby="paiementModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="paiementModalLabel">Modification</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <form id="paiementForm">
+              <input type="hidden" id="paiementId" name="paiementId" />
+              <input type="hidden" id="colisId" name="colisId" />
+
+              <!-- Montant Total -->
+              <div class="form-group">
+                <label>Montant Total :</label>
+                <input type="text" class="form-control" id="montantTotal" />
+              </div>
+
+              <!-- Montant Déjà Payé -->
+              <div class="form-group">
+                <label>Montant Déjà Payé :</label>
+                <input type="text" class="form-control" id="montantDejaPaye" />
+              </div>
+
+              <!-- Remise -->
+              <div class="form-group">
+                <label>Remise (€)</label>
+                <input type="number" class="form-control" id="remise" name="remise" min="0" value="0" />
+              </div>
+
+              <!-- Type de Paiement -->
+              <div class="form-group">
+                <label>Type de Paiement :</label>
+                <select class="form-control" id="typePaiement" required>
+                  <option selected value="total">Paiement Total</option>
+                </select>
+              </div>
+
+              <!-- Montant Partiel -->
+              <div class="form-group" id="montantPartielDiv" style="display: none;">
+                <label>Montant Payé :</label>
+                <input type="number" class="form-control" id="montantPartiel" step="0.01" />
+              </div>
+
+              <button type="submit" class="btn btn-primary">Modifier</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="applyBonusModal" tabindex="-1" role="dialog" aria-labelledby="applyBonusLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <form id="applyBonusForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="applyBonusLabel">Appliquer le bonus fidélité</h5>
+              <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+
+            <div class="modal-body">
+              <input type="hidden" id="bonusColisId" name="colisId" />
+              <input type="hidden" id="bonusApplyAmount" name="applyAmount" value="0" />
+
+              <div class="form-group">
+                <label>Client</label>
+                <input type="text" class="form-control" id="bonusClient" readonly />
+              </div>
+
+              <div class="form-group">
+                <label>Numéro de colis</label>
+                <input type="text" class="form-control" id="bonusNumero" readonly />
+              </div>
+
+              <div class="form-group">
+                <label>Frais d’expédition</label>
+                <input type="text" class="form-control" id="bonusFrais" readonly />
+              </div>
+
+              <div class="form-group">
+                <label>Déjà payé</label>
+                <input type="text" class="form-control" id="bonusDejaPaye" readonly />
+              </div>
+
+              <div class="form-group">
+                <label>Montant restant</label>
+                <input type="text" class="form-control" id="bonusRestant" readonly />
+              </div>
+
+              <hr />
+
+              <div class="form-group">
+                <label>Bonus disponible</label>
+                <input type="text" class="form-control" id="bonusDisponible" readonly />
+              </div>
+
+              <div class="alert alert-info" id="bonusPreview" style="display:none;"></div>
+              <div class="alert alert-warning d-none" id="bonusNone">Aucun bonus applicable.</div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="submit" id="applyBonusBtn" class="btn btn-primary">Appliquer automatiquement</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   {% endfor %}
 {% endblock %}
 {% block javascripts %}
   <script type="text/javascript" src="{{ domaine }}/assets/js/traitements.js"></script>
   <script type="text/javascript" src="{{ domaine }}/assets/js/jquery.dataTables.min.js"></script>
   <script type="text/javascript" src="{{ domaine }}/assets/js/dataTables.bootstrap4.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.edit-paiement-btn').forEach((button) => {
+        button.addEventListener('click', function () {
+          document.getElementById('colisId').value = this.dataset.id
+          document.getElementById('paiementId').value = this.dataset.paiementId
+          document.getElementById('montantTotal').value = this.dataset.total
+          document.getElementById('montantDejaPaye').value = this.dataset.deja
+          document.getElementById('remise').value = this.dataset.remise
+          document.getElementById('typePaiement').value = this.dataset.type
+    
+          if (this.dataset.type === 'partiel') {
+            document.getElementById('montantPartielDiv').style.display = 'block'
+            document.getElementById('montantPartiel').value = this.dataset.partiel
+          } else {
+            document.getElementById('montantPartielDiv').style.display = 'none'
+            document.getElementById('montantPartiel').value = ''
+          }
+    
+          const total = parseFloat(this.dataset.total || 0)
+          const deja = parseFloat(this.dataset.deja || 0)
+          const remise = parseFloat(this.dataset.remise || 0)
+        })
+      })
+    
+      document.getElementById('typePaiement').addEventListener('change', function () {
+        if (this.value === 'partiel') {
+          document.getElementById('montantPartielDiv').style.display = 'block'
+        } else {
+          document.getElementById('montantPartielDiv').style.display = 'none'
+          document.getElementById('montantPartiel').value = ''
+        }
+      })
+    })
+  </script>
+
+  <script>
+    document.getElementById('paiementForm').addEventListener('submit', function (e) {
+      e.preventDefault()
+    
+      const id = document.getElementById('paiementId').value
+      const remise = parseFloat(document.getElementById('remise').value)
+      const montant = document.getElementById('typePaiement').value === 'partiel' ? parseFloat(document.getElementById('montantPartiel').value) : parseFloat(document.getElementById('montantPartiel').value)
+      const mode = document.getElementById('typePaiement').value
+      const montantTotal = document.getElementById('montantTotal').value
+      const montantDejaPaye = document.getElementById('montantDejaPaye').value
+    
+      fetch('/admin/paiements/paiement/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          id: id,
+          remise: remise,
+          montant: montant,
+          montantTotal: mode,
+          montantTotal: montantTotal,
+          montantDejaPaye: montantDejaPaye
+        })
+      })
+        .then((response) => response.json())
+        .then((result) => {
+          if (result.success) {
+            alert('Paiement mis à jour avec succès ✅')
+            //   location.reload() // recharge la page ou fais une mise à jour dynamique
+          } else {
+            alert('Erreur : ' + result.message)
+          }
+        })
+        .catch((err) => {
+          alert('Erreur serveur')
+          console.error(err)
+        })
+    })
+  </script>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Ouvrir le modal et charger les infos
+      document.querySelectorAll('.edit-paiement-btn').forEach((btn) => {
+        btn.addEventListener('click', function () {
+          const colisId = this.dataset.id
+          fetch(`/admin/paiements/bonus/info/${colisId}`)
+            .then((r) => r.json())
+            .then((data) => {
+              // Remplissage
+              document.getElementById('bonusColisId').value = colisId
+              document.getElementById('bonusClient').value = data.client
+              document.getElementById('bonusNumero').value = data.numero
+              document.getElementById('bonusFrais').value = data.frais.toFixed(2)
+              document.getElementById('bonusDejaPaye').value = data.dejaPaye.toFixed(2)
+              document.getElementById('bonusRestant').value = data.restant.toFixed(2)
+              document.getElementById('bonusDisponible').value = data.bonusDisponible.toFixed(2)
+    
+              // Calcul automatique
+              const apply = Math.max(0, Math.min(data.restant, data.bonusDisponible))
+              document.getElementById('bonusApplyAmount').value = apply
+    
+              const preview = document.getElementById('bonusPreview')
+              const none = document.getElementById('bonusNone')
+              const submitBtn = document.getElementById('applyBonusBtn')
+    
+              if (apply > 0) {
+                none.classList.add('d-none')
+                preview.style.display = 'block'
+                preview.textContent = `Le bonus de ${apply.toFixed(0)} € sera appliqué automatiquement. Nouveau restant : ${(data.restant - apply).toFixed(2)} €`
+                submitBtn.disabled = false
+              } else {
+                preview.style.display = 'none'
+                none.classList.remove('d-none')
+                submitBtn.disabled = true
+              }
+            })
+            .catch(() => {
+              alert('Impossible de charger les informations de bonus.')
+            })
+        })
+      })
+    
+      // Soumission
+      document.getElementById('applyBonusForm').addEventListener('submit', function (e) {
+        e.preventDefault()
+        const submitBtn = document.getElementById('applyBonusBtn')
+        submitBtn.disabled = true
+        submitBtn.textContent = 'Traitement...'
+    
+        const colisId = document.getElementById('bonusColisId').value
+        const montant = parseInt(document.getElementById('bonusApplyAmount').value || '0', 10)
+    
+        fetch(`/admin/paiements/bonus/appliquer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body: JSON.stringify({ colisId, montant })
+        })
+          .then((r) => r.json())
+          .then((res) => {
+            if (!res.success) throw new Error(res.message || 'Erreur serveur')
+            $('#applyBonusModal').modal('hide')
+            location.reload()
+          })
+          .catch((err) => {
+            alert('Erreur: ' + err.message)
+          })
+          .finally(() => {
+            submitBtn.disabled = false
+            submitBtn.textContent = 'Appliquer automatiquement'
+          })
+      })
+    })
+  </script>
 {% endblock %}

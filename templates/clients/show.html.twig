@@ -85,7 +85,7 @@
                       <td>{{ base_coli.dateReceptions ? base_coli.dateReceptions|date('d-m-Y') }}</td>
                       <td>{{ base_coli.clients.prenom ~ ' ' ~ base_coli.clients.nom }}</td>
                       <td>
-                        <a href="#">{{ base_coli.expeditions.destinations ~ '-' }}{{ base_coli.expeditions.dateExpeditions ? base_coli.expeditions.dateExpeditions|date('Y-m-d') : '' }}</a>
+                        <a href="#">{{ base_coli.expeditions.destinations ~ '-' }}{{ base_coli.expeditions.dateExpeditions ? base_coli.expeditions.dateExpeditions|date('d-m-Y') : '' }}</a>
                       </td>
                     </tr>
                   {% else %}

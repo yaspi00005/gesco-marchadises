@@ -107,10 +107,20 @@ class Clients
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $email = null;
 
+    /**
+     * @var Collection<int, BasesSahel>
+     */
+    #[ORM\OneToMany(targetEntity: BasesSahel::class, mappedBy: 'Clients')]
+    private Collection $basesSahels;
+
+    #[ORM\Column]
+    private ?int $sahel = 0;
+
     public function __construct()
     {
         $this->baseColis = new ArrayCollection();
         $this->programmes = new ArrayCollection();
+        $this->basesSahels = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -295,6 +305,48 @@ class Clients
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, BasesSahel>
+     */
+    public function getBasesSahels(): Collection
+    {
+        return $this->basesSahels;
+    }
+
+    public function addBasesSahel(BasesSahel $basesSahel): static
+    {
+        if (!$this->basesSahels->contains($basesSahel)) {
+            $this->basesSahels->add($basesSahel);
+            $basesSahel->setClients($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBasesSahel(BasesSahel $basesSahel): static
+    {
+        if ($this->basesSahels->removeElement($basesSahel)) {
+            // set the owning side to null (unless already changed)
+            if ($basesSahel->getClients() === $this) {
+                $basesSahel->setClients(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getSahel(): ?int
+    {
+        return $this->sahel;
+    }
+
+    public function setSahel(int $sahel): static
+    {
+        $this->sahel = $sahel;
 
         return $this;
     }
