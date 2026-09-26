@@ -14,9 +14,7 @@ class ExpeditionsType extends AbstractType
     {
         $builder
             ->add('modeTransport', ChoiceType::class, ['choices' => ['Aérien' => 'Aérien', 'Maritime ' => 'Maritime '], 'placeholder' => 'Choisir'])
-           /*  ->add('numeroExpeditions') */
-            ->add('depart', ChoiceType::class, ['choices' => ['Chine 1 ' => 'CHine 1'], 'placeholder' => 'Choisir'])
-            ->add('destinations', ChoiceType::class, ['choices' => ['Bamako' => 'Bamako'], 'placeholder' => 'Choisir'])
+            ->add('destinations', ChoiceType::class, ['choices' => ['Mali' => 'Mali', 'Sénégal ' => 'Sénégal '], 'placeholder' => 'Choisir']) 
               ->add('dateExpeditions', null, [
                 'widget' => 'single_text',
             ])

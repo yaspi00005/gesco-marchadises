@@ -13,106 +13,53 @@
       <div class="page-header">
         <div class="row">
           <div class="col-lg-7 col-md-12 col-sm-12 col-12">
-            <h5 class="text-uppercase">Paiements</h5>
+            <h5 class="text-uppercase">Gestion des paiement</h5>
           </div>
           <div class="col-lg-5 col-md-12 col-sm-12 col-12">
             <ul class="list-inline breadcrumb float-right">
               <li class="list-inline-item">
                 <a href="/">Accueil</a>
               </li>
-              <li class="list-inline-item">
-                <a href="">Journal des ventes</a>
-              </li>
-              <li class="list-inline-item">Journal des ventes détails</li>
+              <li class="list-inline-item">Paiement</li>
             </ul>
           </div>
         </div>
       </div>
-      <div class="row">
-        <div class="col-sm-4 col-3"></div>
-      </div>
+     
       <div class="content-page">
-        <form id="search-form" class="mb-3">
-          <div class="row filter-row">
-            <div class="col-sm-6 col-md-3">
-              <div class="form-group custom-mt-form-group">
-                <input type="date" id="startDate" class="form-control" />
-                <label class="control-label">Date de début</label><i class="bar"></i>
-              </div>
-            </div>
-
-            <div class="col-sm-6 col-md-3">
-              <div class="form-group custom-mt-form-group">
-                <input type="date" id="endDate" class="form-control" />
-                <label class="control-label">Date de fin</label><i class="bar"></i>
-              </div>
-            </div>
-
-            <div class="col-sm-6 col-md-3">
-              <a href="#" id="search-button" class="btn btn-success btn-block mt-4 mb-2 charger" data-type="details">Rechercher</a>
-            </div>
-          </div>
-        </form>
         <div class="row">
           <div class="col-lg-12">
             <div class="table-responsive">
-              <table class="table table-striped m-b-0 datatable">
-              <h4 >Total des encaissement :<span id="total-received"><span></h4>
+              <table class="table table-striped custom-table datatable">
                 <thead>
                   <tr>
-                    <th>Montants</th>
-                    <th>Date Réception</th>
-                    <th>Mode Paiement</th>
-                    <th>Clients</th>
-                    <th>Colis</th>
-                    <th>Caissier</th>
+                    <th style="min-width:50px;">Numero Expeditions</th>
+                    <th style="min-width:70px;">Mode Transport</th>
+                    <th style="min-width:70px;">Destinations</th>
+                    <th style="min-width:70px;">Montant Total</th>
+                    <th style="min-width:70px;">Montant Encaissé</th>
+                    <th style="min-width:50px;">Date Expéditions</th>
+                    <th style="min-width:50px;">Actions</th>
                   </tr>
                 </thead>
-                <tbody id="paiements-list">
-                  {% for paiement in paiements %}
+                <tbody>
+                  {% for expedition in expeditions %}
                     <tr>
-                      <td>{{ paiement.montants }}</td>
-                      <td>{{ paiement.datePaiements ? paiement.datePaiements|date('Y-m-d H:i:s') : '' }}</td>
-                      <td>{{ paiement.modePaiement }}</td>
-                      <td>{{ paiement.colis.destinateurs.prenom ~ ' ' ~ paiement.colis.destinateurs.nom }}</td>
-                      <td>{{ paiement.colis.numeroSuivi }}</td>
-                      <td>{{ paiement.caissier.prenom ~ ' ' ~ paiement.caissier.nom }}</td>
-                    </tr>
-                  {% else %}
-                    <tr>
-                      <td colspan="5">no records found</td>
+                      <td>EX-{{ expedition.numeroExpeditions }}</td>
+                      <td>{{ expedition.modeTransport }}</td>
+                      <td>{{ expedition.destinations }}</td>
+                      <td>{{ expedition.montantTotal|number_format(0, '.', ',') }}</td>
+                      <td>{{ expedition.montantEncaisses|number_format(0, '.', ',') }}</td>
+                      <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('Y-m-d') : '' }}</td>
+                      <td>
+                        <a href="{{ path('liste_paiement', { numeroExpeditions: expedition.numeroExpeditions }) }}">Détail</a>
+                      </td>
                     </tr>
                   {% endfor %}
                 </tbody>
               </table>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div id="details-modal" class="modal">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title">Détails de la commande</h3>
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <i class="fa fa-print"></i>
-          <table class="table table-striped m-b-0">
-            <thead>
-              <tr>
-                <th>Avance payé</th>
-                <th>Rémise</th>
-                <th>Total</th>
-                <th>Caissier</th>
-                <th>Statut</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody class="details"></tbody>
-          </table>
         </div>
       </div>
     </div>

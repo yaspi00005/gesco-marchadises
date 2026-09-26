@@ -18,7 +18,7 @@ class BaseColisDetails
     private ?string $typeMarchandises = null;
 
     #[ORM\Column]
-    private ?float $poidsVolume = null;
+    private ?string $poidsVolume = null;
 
     #[ORM\Column]
     private ?int $prixPoidsVolume = null;
@@ -39,6 +39,9 @@ class BaseColisDetails
     #[ORM\JoinColumn(nullable: false)]
     private ?BaseColis $colis = null;
 
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $observations = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -56,12 +59,12 @@ class BaseColisDetails
         return $this;
     }
 
-    public function getPoidsVolume(): ?float
+    public function getPoidsVolume(): ?string
     {
         return $this->poidsVolume;
     }
 
-    public function setPoidsVolume(float $poidsVolume): static
+    public function setPoidsVolume(string $poidsVolume): static
     {
         $this->poidsVolume = $poidsVolume;
 
@@ -136,6 +139,18 @@ class BaseColisDetails
     public function setColis(?BaseColis $colis): static
     {
         $this->colis = $colis;
+
+        return $this;
+    }
+
+    public function getObservations(): ?string
+    {
+        return $this->observations;
+    }
+
+    public function setObservations(string $observations): static
+    {
+        $this->observations = $observations;
 
         return $this;
     }

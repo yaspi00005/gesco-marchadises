@@ -3,9 +3,7 @@
 {% block title %}
   Hello HomeController!
 {% endblock %}
-{% block stylesheets %}
-  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/plugins/morris/morris.css" />
-{% endblock %}
+
 {% block body %}
   <div class="page-wrapper">
     <!-- content -->
@@ -13,7 +11,7 @@
       <div class="page-header">
         <div class="row">
           <div class="col-lg-7 col-md-12 col-sm-12 col-12">
-            <h5 class="text-uppercase">about teacher</h5>
+            <h5 class="text-uppercase">Details Colis</h5>
           </div>
           <div class="col-lg-5 col-md-12 col-sm-12 col-12">
             <ul class="list-inline breadcrumb float-right">
@@ -23,7 +21,7 @@
               <li class="list-inline-item">
                 <a href="#">Teachers</a>
               </li>
-              <li class="list-inline-item">About Teacher</li>
+              <li class="list-inline-item">Details Colis</li>
             </ul>
           </div>
         </div>
@@ -43,11 +41,11 @@
                               <img class="card-img-top" src="{{ domaine }}/assets/img/user.jpg" alt="Card image" />
                             </div>
                             <div class="aboutprofile-name">
-                              <h5 class="text-center mt-2">{{ colis.destinateurs.prenom ~ ' ' ~ colis.destinateurs.nom }}</h5>
+                              <h5 class="text-center mt-2">{{ colis.clients.prenom ~ ' ' ~ colis.clients.nom }}</h5>
                             </div>
                             <ul class="list-group list-group-flush">
                               <li class="list-group-item">
-                                <b>Téléphone</b><a href="#" class="float-right">{{ colis.destinateurs.usename }}</a>
+                                <b>Téléphone</b><a href="#" class="float-right">{{ colis.clients.telephone }}</a>
                               </li>
                               <li class="list-group-item">
                                 <b>Daté d'adhésion</b><a href="#" class="float-right">0</a>
@@ -87,14 +85,14 @@
                                     <p class="text-muted">{{ colis.typeExpeditions }}</p>
                                   </div>
                                   <div class="col-md-3 col-6">
-                                    <strong>Poids total</strong>
+                                    <strong>Couleur</strong>
                                     <br />
-                                    <p class="text-muted">{{ colis.poidsVolumeTotal }} kg</p>
+                                    <p class="text-muted"> </p>
                                   </div>
                                   <div class="col-md-3 col-6">
                                     <strong>Prix</strong>
                                     <br />
-                                    <p class="text-muted">{{ colis.fraisExpeditions|number_format(0, '.', ',') }} FCFA</p>
+                                    <p class="text-muted">{{ colis.fraisExpeditions|number_format(0, '.', ',') }} €</p>
                                   </div>
                                 </div>
                                 <div class="row mt-3">
@@ -133,16 +131,28 @@
                                   </div>
                                 </div>
                                 <div class="row mt-3">
-                                  <div class="col-md-6 col-12">
-                                    <strong>Destinateur</strong>
+                                  <div class="col-md-3 col-12">
+                                    <strong>Expéditeur</strong>
                                     <br />
-                                    <p class="text-muted">{{ colis.destinateurs.prenom ~ ' ' ~ colis.destinateurs.nom }}</p>
+                                    <p class="text-muted">{{ colis.clients.prenom ~ ' ' ~ colis.clients.nom }}</p>
                                   </div>
-                                  <div class="col-md-6 col-12">
+                                  <div class="col-md-3 col-12">
+                                    <strong>Destinataire</strong>
+                                    <br />
+                                    <p class="text-muted">{{ colis.destinateursNom ~ ' ' ~ colis.destinateursTelephones }}</p>
+                                  </div>
+                                  <div class="col-md-3 col-12">
                                     <strong>Numéro d'expédition</strong>
                                     <br />
                                     <p class="text-muted">
                                       <a href="#">{{ colis.expeditions.numeroExpeditions }}</a>
+                                    </p>
+                                  </div>
+                                  <div class="col-md-3 col-12">
+                                    <strong>Code de retrait</strong>
+                                    <br />
+                                    <p class="text-muted">
+                                      <a href="#">{{ colis.code }}</a>
                                     </p>
                                   </div>
                                 </div>
@@ -163,12 +173,15 @@
                                     
                                     <tbody>
                                       <tr>
-                                        <th>Poids</th>
-                                        <td>{{ colis.poidsVolume }}</td>
+                                        <th>Couleur</th>
+                                       <td style="background-color: {{ colis.poidsVolume }}; width: 50px; height: 20px;"></td>
+
                                         <th>Prix unitaire</th>
                                         <td>{{ colis.prixPoidsVolume|number_format(0, '.', ',') }}</td>
                                         <th>Total</th>
                                         <td>{{ colis.montantTotal|number_format(0, '.', ',') }}</td>
+                                         <th>Observations</th>
+                                        <td>{{ colis.observations }}</td>
                                       </tr> 
                                     </tbody>
                                   </table>
@@ -192,13 +205,4 @@
       </div>
     </div>
   </div>
-{% endblock %}
-{% block javascripts %}
-  <script type="text/javascript" src="{{ domaine }}/assets/js/moment.min.js"></script>
-  <script type="text/javascript" src="{{ domaine }}/assets/js/bootstrap-datetimepicker.min.js"></script>
-  <script type="text/javascript" src="{{ domaine }}/assets/plugins/morris/morris.min.js"></script>
-  <script type="text/javascript" src="{{ domaine }}/assets/plugins/raphael/raphael-min.js"></script>
-  <script type="text/javascript" src="{{ domaine }}/assets/js/fullcalendar.min.js"></script>
-  <script type="text/javascript" src="{{ domaine }}/assets/js/jquery.fullcalendar.js"></script>
-  <script type="text/javascript" src="{{ domaine }}/assets/js/chart.js"></script>
 {% endblock %}

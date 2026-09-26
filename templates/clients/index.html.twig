@@ -1,131 +1,132 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-  Hello HomeController!
+  Stocks index
 {% endblock %}
 {% block stylesheets %}
-  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/plugins/morris/morris.css" />
-  <style>
-    .grid-card {
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      padding: 15px;
-      margin: 15px;
-      background: #fff;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
-    
-    .grid-card .card-title {
-      font-size: 18px;
-      font-weight: bold;
-      color: #333;
-    }
-    
-    .grid-card p {
-      font-size: 14px;
-      color: #666;
-    }
-    
-    .grid-card .btn {
-      margin-right: 10px;
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/dataTables.bootstrap4.min.css" />
 {% endblock %}
 {% block body %}
   <div class="page-wrapper">
     <!-- content -->
     <div class="content container-fluid">
-      <div class="row">
-        <div class="col-md-6 col-sm-6 col-lg-6 col-xl-6">
-          <div class="dash-widget dash-widget5">
-            <span class="dash-widget-icon bg-primary"><i class="fa fa-calculator" aria-hidden="true"></i></span>
-            <div class="dash-widget-info">
-              <h3>0</h3>
-              <input type="hidden" id="ventes" value="0" />
-              <span>Colis en attente</span>
-            </div>
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Gestion des colis</h5>
           </div>
-        </div>
-        <div class="col-md-6 col-sm-6 col-lg-6 col-xl-6">
-          <div class="dash-widget dash-widget5">
-            <span class="dash-widget-icon bg-info"><i class="fa fa-calculator" aria-hidden="true"></i></span>
-            <div class="dash-widget-info">
-              <h3>0</h3>
-              <input type="hidden" id="achats" value="0" />
-              <span>Colis Recu</span>
-            </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">
+                <a href="">Journal des ventes</a>
+              </li>
+              <li class="list-inline-item">Journal des ventes détails</li>
+            </ul>
           </div>
         </div>
       </div>
-      <div class="row mt-2">
-        <div class="col-lg-12">
-          <div class="row">
-            {% for colis in colis %}
-              <div class="col-sm-6 col-md-6 col-lg-4">
-                <div class="card grid-card">
-                  <div class="card-content">
-                    <h5 class="card-title"><i class="fas fa-box"></i> Colis: #{{ colis.numeroSuivi }}</h5>
-                    <p>
-                      <strong>Statut :</strong> {{ colis.statut }}<br />
-                      <strong>Date :</strong> {{ colis.dateReceptions ? colis.dateReceptions|date('d-m-Y') }}<br />
-                      <strong>Poids :</strong> {{ colis.poidsVolumeTotal }} kg<br />
-                      <strong>Prix :</strong> {{ colis.fraisExpeditions }} FCFA<br />
-                      <strong>Paiement :</strong> {{ colis.statutPaiements }}<br />
-                      <strong>Nombre colis :</strong> {{ colis.unites }} <br />
-                      <strong>Type d'expédition :</strong> {{ colis.typeExpeditions }}
-                    </p>
-                    <a href="{{ path('colis_details', { url: colis.url }) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> Voir les détails</a>
-                    <button class="btn btn-success btn-sm" onclick="changeStatus({{ colis.fraisExpeditions }}, '{{ colis.id }}')"><i class="fas fa-sync-alt"></i> Payer par Orange Money</button>
-                    <div class="card-info clearfix mt-3">
-                      <div class="post-left">
-                        <ul>
-                          <li>
-                            <i class="far fa-calendar-alt"></i>
-                            <span>Dernière mise à jour :..............</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
+      <div class="row">
+        <div class="col-sm-4 col-3"></div>
+      </div>
+      <div class="content-page">
+        <div class="row filter-row">
+          <div class="col-sm-6 col-md-3">
+            <div class="form-group custom-mt-form-group">
+              <input type="text" id="num_suivi" />
+              <label class="control-label">Numéro de suivi</label><i class="bar"></i>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-3">
+            <div class="form-group custom-mt-form-group">
+              <input type="date" value="null" id="date" />
+              <label class="control-label">Date</label><i class="bar"></i>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-md-3">
+            <div class="form-group custom-mt-form-group">
+              <select id="">
+                <option value="Tous">Tous</option>
+                <option value="En préparation">En préparation</option>
+                <option value="Expédié">Expédié</option>
+                <option value="En transit">En transit</option>
+                <option value="Arrivé">Arrivé</option>
+                <option value="Livré">Livré</option>
+                <option value="Retenu en douane">Retenu en douane</option>
+              </select>
+              <label class="control-label">Statut</label><i class="bar"></i>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-md-3">
+            <a href="#" class="btn btn-success btn-block mt-4 mb-2 charger" data-type="details">Charger</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="table-responsive">
+              <table class="table table-striped m-b-0 datatable">
+                <div class="col-sm-12 col-12 text-right m-b-20">
+                  <div class="view-icons">
+                    <a href="-" class="list-view btn btn-link active"><i class="fas fa-bars"></i></a>
                   </div>
                 </div>
-              </div>
-            {% endfor %}
+                <thead>
+                  <tr>
+                    <th>Numéro de colis</th>
+                    <th>Type d'Expédition</th>
+                    <th>Poids/volume du colis</th>
+                    <th>Unité</th>
+                    <th>Frais d’expédition</th>
+                    <th>État du colis</th>
+                    <th>Paiement</th>
+                    <th>Date de réception</th>
+                    <th>Date de Récuperation</th>
+                    <th>Destinateur</th>
+                    <th>Expédition</th>
+                    <th>Voix</th>
+                  </tr>
+                </thead>
+               
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Modal for Orange Money Payment -->
-  <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+  <div id="details-modal" class="modal">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="paymentModalLabel">Payer par Orange Money</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h3 class="modal-title">Détails de la commande</h3>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
         <div class="modal-body">
-          <!-- Information about the payment -->
-          <p>
-            <strong>Montant:</strong> <span id="montant"></span>
-          </p>
-          <p>
-            <strong>Frais:</strong> <span id="frais"></span>
-          </p>
-          <p>
-            <strong>Total:</strong> <span id="total"></span>
-          </p>
-          <input type="text" id="colisId" value="0" />
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-          <button type="button" class="btn btn-success" id="payerButton">Payer</button>
+          <i class="fa fa-print"></i>
+          <table class="table table-striped m-b-0">
+            <thead>
+              <tr>
+                <th>Avance payé</th>
+                <th>Rémise</th>
+                <th>Total</th>
+                <th>Chauffeur</th>
+                <th>Statut</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody class="details"></tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
 {% endblock %}
 {% block javascripts %}
-  <script type="text/javascript" src="{{ domaine }}/assets/js/moment.min.js"></script>
-  <script type="text/javascript" src="{{ domaine }}/assets/js/paiements.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/base-colis.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/dataTables.bootstrap4.min.js"></script>
 {% endblock %}

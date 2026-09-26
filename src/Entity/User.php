@@ -31,10 +31,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         minMessage: 'Your first name must be at least {{ limit }} characters long',
         maxMessage: 'Your first name cannot be longer than {{ limit }} characters',
     )]
-    #[Assert\Regex(
+    /* #[Assert\Regex(
         pattern: '/^(6|7|8|9)\d{7}$/',
         message: 'Veuillez saisir un numéro de téléphone malien valide.'
-    )]
+    )] */
     private ?string $usename = null;
 
     /**
@@ -71,7 +71,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private ?string $nom = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+  /*   #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Email(
         message: 'L\'e-mail {{ value }} n\'est pas un e-mail valide.',
     )]
@@ -81,7 +81,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         max: 100,
         maxMessage: 'Votre e-mail ne peut pas contenir plus de {{ limit }} caractères',
     )]
-    private ?string $email = null;
+    private ?string $email = null; */
 
     #[ORM\Column]
     private ?bool $statut = true;
@@ -110,17 +110,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Paiements::class, mappedBy: 'caissier')]
     private Collection $paiements;
 
-    #[ORM\Column(length: 255)]
-    private ?string $qrCodePath = null;
+   
 
     #[ORM\Column(length: 255)]
     private ?string $url = null;
+
+    /**
+     * @var Collection<int, BaseDiffusions>
+     */
+    #[ORM\OneToMany(targetEntity: BaseDiffusions::class, mappedBy: 'destinateurs')]
+    private Collection $baseDiffusions;
 
     public function __construct()
     {
         $this->baseColis = new ArrayCollection();
         $this->baseColisDestinateurs = new ArrayCollection();
         $this->paiements = new ArrayCollection();
+        $this->baseDiffusions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -222,7 +228,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getEmail(): ?string
+/*     public function getEmail(): ?string
     {
         return $this->email;
     }
@@ -233,7 +239,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
+ */
     public function isStatut(): ?bool
     {
         return $this->statut;
@@ -360,18 +366,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getQrCodePath(): ?string
-    {
-        return $this->qrCodePath;
-    }
-
-    public function setQrCodePath(string $qrCodePath): static
-    {
-        $this->qrCodePath = $qrCodePath;
-
-        return $this;
-    }
-
     public function getUrl(): ?string
     {
         return $this->url;
@@ -380,6 +374,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUrl(string $url): static
     {
         $this->url = $url;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, BaseDiffusions>
+     */
+    public function getBaseDiffusions(): Collection
+    {
+        return $this->baseDiffusions;
+    }
+
+    public function addBaseDiffusion(BaseDiffusions $baseDiffusion): static
+    {
+        if (!$this->baseDiffusions->contains($baseDiffusion)) {
+            $this->baseDiffusions->add($baseDiffusion);
+            $baseDiffusion->setDestinateurs($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBaseDiffusion(BaseDiffusions $baseDiffusion): static
+    {
+        if ($this->baseDiffusions->removeElement($baseDiffusion)) {
+            // set the owning side to null (unless already changed)
+            if ($baseDiffusion->getDestinateurs() === $this) {
+                $baseDiffusion->setDestinateurs(null);
+            }
+        }
 
         return $this;
     }

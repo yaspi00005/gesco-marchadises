@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Ajouter un Nouveau Client
+{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/dataTables.bootstrap4.min.css" />
+{% endblock %}
+
+{% block body %}
+  <div class="page-wrapper">
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-12">
+            <h5 class="text-uppercase">Gestion des clients</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-content">
+        <div class="row">
+          <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="card">
+              <div class="page-title">
+                <div class="row">
+                  <div class="col-lg-12">
+                    <h4 class="text-center">Ajouter un Nouveau Client</h4>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-lg-12">
+                   {% include 'alert.html.twig' %}
+                    {{ form_start(form) }}
+
+                    <div class="form-group custom-mt-form-group">
+                      {{ form_errors(form.nom) }}
+                      {{ form_widget(form.nom, {'attr': {'class': 'form-control',  }}) }}
+                      <label class="control-label">Nom</label><i class="bar"></i>
+                    </div>
+
+                    <div class="form-group custom-mt-form-group">
+                      {{ form_errors(form.prenom) }}
+                      {{ form_widget(form.prenom, {'attr': {'class': 'form-control', }}) }}
+                      <label class="control-label">Prénom</label><i class="bar"></i>
+                    </div>
+
+                    <div class="form-group custom-mt-form-group">
+                      {{ form_errors(form.telephone) }}
+                      {{ form_widget(form.telephone, {'attr': {'class': 'form-control',  }}) }}
+                      <label class="control-label">Téléphone</label><i class="bar"></i>
+                    </div>
+                   <div class="form-group custom-mt-form-group">
+                      {{ form_errors(form.email) }}
+                      {{ form_widget(form.email, {'attr': {'class': 'form-control',   }}) }}
+                      <label class="control-label">E-mail</label><i class="bar"></i>
+                    </div>
+                    <div class="form-group custom-mt-form-group">
+                      {{ form_errors(form.adresse) }}
+                      {{ form_widget(form.adresse, {'attr': {'class': 'form-control',  }}) }}
+                      <label class="control-label">Adresse</label><i class="bar"></i>
+                    </div>
+
+                    <div class="form-group custom-mt-form-group">
+                      {{ form_errors(form.ville) }}
+                      {{ form_widget(form.ville, {'attr': {'class': 'form-control', }}) }}
+                      <label class="control-label">Ville</label><i class="bar"></i>
+                    </div>
+
+                    <div class="form-group custom-mt-form-group">
+                      {{ form_errors(form.codePostal) }}
+                      {{ form_widget(form.codePostal, {'attr': {'class': 'form-control',  }}) }}
+                      <label class="control-label">Code Postal</label><i class="bar"></i>
+                    </div>
+
+                    <div class="form-group custom-mt-form-group">
+                      {{ form_errors(form.pays) }}
+                      {{ form_widget(form.pays, {'attr': {'class': 'form-control',  }}) }}
+                      <label class="control-label">Pays</label><i class="bar"></i>
+                    </div>
+
+                    <div class="form-group text-center">
+                      <button type="submit" class="btn btn-success">Enregistrer</button>
+                      <a href="" class="btn btn-secondary">Annuler</a>
+                    </div>
+
+                    {{ form_end(form) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/dataTables.bootstrap4.min.js"></script>
+{% endblock %}

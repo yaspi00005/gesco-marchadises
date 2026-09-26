@@ -14,7 +14,7 @@
       <div class="page-header">
         <div class="row">
           <div class="col-lg-7 col-md-12 col-sm-12 col-12">
-            <h5 class="text-uppercase">Expédition</h5>
+            <h5 class="text-uppercase">Changement de statut</h5>
           </div>
           <div class="col-lg-5 col-md-12 col-sm-12 col-12">
             <ul class="list-inline breadcrumb float-right">
@@ -33,17 +33,20 @@
         <p><strong>Numéro de suivi :</strong> {{ colis.numeroSuivi }}</p>
        {#  <p><strong>Expéditeur :</strong> {{ colis.expediteur }}</p> #}
         <p><strong>Date de réception :</strong> {{ colis.dateReceptions ? colis.dateReceptions|date('d-m-Y') }}</p>
-       {#  <p><strong>Marchandises :</strong> {{ colis.details }}</p> #}
         <p><strong>Statut actuel :</strong> {{ colis.statut }}</p>
+       <p><strong>Type d'expédition :</strong> {{ colis.typeExpeditions }}</p>
+        <p><strong>Couleur :</strong> {{ colis.poidsVolumeTotal }} </p>
+        <p><strong>Montat à payer :</strong> {{ colis.fraisExpeditions }}</p>
+        <p><strong>Statut paiement :</strong> {{ colis.statutPaiements }}</p>
 
         <!-- Formulaire pour changer le statut -->
         <form action="{{ path('changer_statut_via_qr', {url: colis.url}) }}" method="POST">
           <div class="form-group">
             <label for="nouveauStatut">Changer le statut</label>
             <select class="form-control" id="nouveauStatut" name="nouveauStatut">
-              <option value="en attente" {% if colis.statut == 'en attente' %}selected{% endif %}>En attente</option>
-              <option value="en cours" {% if colis.statut == 'en cours' %}selected{% endif %}>En cours</option>
-              <option value="livré" {% if colis.statut == 'livré' %}selected{% endif %}>Livré</option>
+              <option value="Arrivé" {% if colis.statut == 'arrivé' %}selected{% endif %}>Arrivé</option>
+               <option value="Livré" {% if colis.statut == 'livré' %}selected{% endif %}>Livré</option>
+               <option value="Retenu en douane" {% if colis.statut == 'retenu en douane' %}{% endif %}>Retenu en douane</option>
             </select>
           </div>
           <button type="submit" class="btn btn-primary mt-3">Mettre à jour le statut</button>

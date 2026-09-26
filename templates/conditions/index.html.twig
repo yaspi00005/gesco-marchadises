@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Hello ConditionsController!
+{% endblock %}
+
+{% block body %}
+  <div class="container mt-4">
+    <h1 class="text-center mb-4">Nos Services</h1>
+
+    <div class="row mb-5">
+      <!-- Service d'envoi -->
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h3 class="card-title">Service d'envoi</h3>
+            <p class="card-text">
+              Nous assurons l'envoi de colis standards (vêtements, chaussures, lingerie, sacs, etc.) à <strong>10 000 FCFA/kg par avion</strong>, avec un délai de livraison de <strong>2 à 3 semaines</strong>.
+            </p>
+            <p class="card-text">
+              Pour les matériaux électroniques, électriques, batteries, piles, poudres et liquides, le tarif est de <strong>12 000 FCFA/kg par avion</strong>, avec le même délai de livraison.
+            </p>
+            <p class="text-center">📦✈️</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Service d'achat -->
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h3 class="card-title">Service d'achat</h3>
+            <p class="card-text">Vous avez des difficultés à effectuer des achats sur Alibaba ou vous ne possédez pas de carte bancaire ? Envoyez-nous des photos et détails du produit recherché, nous nous chargeons de l’achat, incluant :</p>
+            <ul>
+              <li>Recherche du produit</li>
+              <li>Négociation d’un prix compétitif</li>
+              <li>Gestion de l'achat</li>
+            </ul>
+            <p>
+              Une commission de <strong>15%</strong> est appliquée sur les frais d'achat.
+              <strong>Exemple :</strong> Pour un achat de 10 000 FCFA, notre commission est de 1 500 FCFA.
+            </p>
+            <p class="text-center">🛒💰</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paiement de fournisseur -->
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h3 class="card-title">Paiement de fournisseur</h3>
+            <p class="card-text">Nous effectuons des paiements à vos fournisseurs en RMB si vous ne possédez pas de carte bancaire.</p>
+            <p>Le paiement est effectué uniquement après réception du montant en FCFA. Nous vous garantissons un service rapide et fiable.</p>
+            <p class="text-center">💳💵</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Politique d'utilisation -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="container mt-5">
+              <h1 class="text-center mb-4">Conditions Générales d'Utilisation</h1>
+
+              <section>
+                <h2>1. Introduction</h2>
+                <p>Bienvenue sur notre plateforme. En utilisant nos services, vous acceptez les présentes conditions générales d'utilisation (CGU). Nous vous invitons à les lire attentivement avant de poursuivre votre navigation.</p>
+              </section>
+
+              <section>
+                <h2>2. Objet</h2>
+                <p>Les présentes CGU ont pour objet de définir les termes et conditions dans lesquels les utilisateurs peuvent accéder et utiliser notre plateforme.</p>
+              </section>
+
+              <section>
+                <h2>3. Accès à la Plateforme</h2>
+                <p>L'accès à nos services est réservé aux utilisateurs ayant créé un compte et acceptant nos CGU. Nous nous réservons le droit de restreindre ou de suspendre l'accès à tout utilisateur ne respectant pas ces conditions.</p>
+              </section>
+
+              <section>
+                <h2>4. Responsabilités</h2>
+                <ul>
+                  <li>L'utilisateur est responsable de l'exactitude des informations fournies lors de l'inscription.</li>
+                  <li>La plateforme s'engage à protéger les données personnelles des utilisateurs conformément à notre politique de confidentialité.</li>
+                  <li>En cas de non-respect des CGU, la plateforme peut suspendre ou résilier l'accès au compte utilisateur.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2>5. Politique de Confidentialité</h2>
+                <p>
+                  Nous nous engageons à protéger vos données personnelles. Pour plus de détails, consultez notre <a href="#">Politique de Confidentialité</a>.
+                </p>
+              </section>
+
+              <section>
+                <h2>6. Politique d'Annulation et de Remboursement</h2>
+                <p>En cas d'annulation d'une commande, les conditions suivantes s'appliquent :</p>
+                <ul>
+                  <li>Annulation dans les 24 heures : remboursement intégral.</li>
+                  <li>Annulation après 24 heures : des frais administratifs peuvent s'appliquer.</li>
+                  <li>Aucun remboursement pour les commandes déjà exécutées.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h2>7. Modifications des CGU</h2>
+                <p>Nous nous réservons le droit de modifier les présentes conditions générales à tout moment. Les modifications prendront effet dès leur publication sur cette page. Nous encourageons les utilisateurs à consulter régulièrement les CGU pour rester informés.</p>
+              </section>
+
+              <section>
+                <h2>8. Contact</h2>
+                <p>
+                  Pour toute question ou demande d'information concernant les présentes conditions générales, veuillez nous contacter via notre formulaire de contact ou à l'adresse email suivante : <a href="mailto:support@votreplatforme.com">support@votreplatforme.com</a>.
+                </p>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

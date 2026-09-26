@@ -24,76 +24,71 @@ use Endroid\QrCode\Label\Label;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
+#[Route('/admin')]
 class RegistrationController extends AbstractController
 {
     public function __construct(private EmailVerifier $emailVerifier) {}
 
     #[Route('/base/register', name: 'app_register')]
-    public function register(Request $request, UserRepository $users, UserPasswordHasherInterface $userPasswordHasher, Security $security, EntityManagerInterface $entityManager, #[Autowire('%kernel.project_dir%/public/uploads/')] string $photoDirectory): Response
-    {
+    public function addUser(
+        Request $request,
+        UserRepository $UserRepository,
+        UserPasswordHasherInterface $userPasswordHasher,
+        EntityManagerInterface $entityManager
+    ): Response {
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var string $plainPassword */
-            /*   $plainPassword = $form->get('plainPassword')->getData(); */
+            // Récupération du rôle et du pays
+            $selectedRole = $form->get('roles')->getData();
+            $selectedPays = $request->request->get('pays'); // Récupérer le pays sélectionné
 
+            $roleRamassage = ["ROLE_RAMASSAGE"];
+            $roleRepresentant = ["ROLE_REPRESENTANT"];
+            $roleAdmin = ["ROLE_ADMIN"];
 
-            $role_util = ["ROLE_UTIL"];
-            $role_admin = ["ROLE_ADMIN"];
-            $user->setPassword(
-                $userPasswordHasher->hashPassword(
-                    $user,
-                    'Aircargo2025'
-                )
-            );
-            if ($user->getRoles() == 'Utilisateur') {
-                $user->setRoles($role_util);
+            // Attribution du rôle principal
+            if ($selectedRole == 'Ramasseur') {
+                $user->setRoles($roleRamassage);
+            } elseif ($selectedRole == 'Représentant') {
+                $roles = $roleRepresentant;
+
+                // Ajouter le rôle du pays
+                if ($selectedPays == 'Mali') {
+                    $roles[] = "ROLE_MALI";
+                } elseif ($selectedPays == 'Sénégal') {
+                    $roles[] = "ROLE_SENEGAL";
+                }
+
+                $user->setRoles($roles);
             } else {
-                $user->setRoles($role_admin);
+                $user->setRoles($roleAdmin);
             }
-            $codeClt = md5($user->getId() . date('Y-m'));
+
+            // Hash du mot de passe (mettre un mot de passe par défaut vide)
+            $user->setPassword($userPasswordHasher->hashPassword($user, 'Sotrama2025'));
             $user->setDateCreation(new \DateTime());
 
-
-            // Générer le QR code
-            $qrCode = new QrCode("client:" . $codeClt);
-            $writer = new PngWriter();
-
-            $writer = new PngWriter();
-            $qrCodeFilePath = $photoDirectory . 'qrcode_' . $codeClt . '.png';
-            $result = $writer->write($qrCode);
-            $result->saveToFile($qrCodeFilePath);
-
-            dd($qrCodeFilePath);
-            // Sauvegarder le chemin du QR code dans la base
-            $user->setQrCodePath('qrcode_' . $codeClt . '.png');
-            $user->setUrl($codeClt);
+            $user->setUrl(uniqid());
+            // Sauvegarde de l'utilisateur
             $entityManager->persist($user);
             $entityManager->flush();
-            // generate a signed url and email it to the user
-             $this->emailVerifier->sendEmailConfirmation(
-                'app_verify_email',
-                $user,
-                (new TemplatedEmail())
-                    ->from(new Address('info@aircargo.gescoflex.com', 'AIR CARGO'))
-                    ->to((string) $user->getEmail())
-                    ->subject('Please Confirm your Email')
-                    ->htmlTemplate('registration/confirmation_email.html.twig')
-            );
 
-            // do anything else you need here, like send an email
-
-            //  return $security->login($user, UserAuthenticator::class, 'main');
+           
         }
 
         return $this->render('registration/register.html.twig', [
             'registrationForm' => $form,
-            'users' => $users->findAll()
+            'users' => $UserRepository->findAll()
         ]);
     }
+
+
+
 
     #[Route('/verify/email', name: 'app_verify_email')]
     public function verifyUserEmail(Request $request, TranslatorInterface $translator, UserRepository $userRepository): Response

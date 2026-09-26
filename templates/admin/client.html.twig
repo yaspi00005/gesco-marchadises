@@ -1,0 +1,124 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Stocks index
+{% endblock %}
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/dataTables.bootstrap4.min.css" />
+{% endblock %}
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Liste des clients</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">
+                <a href="">Management</a>
+              </li>
+              <li class="list-inline-item">Liste des client</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4 col-3"></div>
+      </div>
+      <div class="content-page">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="table-responsive">
+              <table class="table table-striped m-b-0 datatable">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Téléphone</th>
+                    <th>Adresse</th>
+                    <th>Ville</th>
+                    <th>Code Postal</th>
+                    <th>Pays</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for client in clients %}
+                    <tr>
+                      <td>{{ client.nom }}</td>
+                      <td>{{ client.prenom }}</td>
+                      <td>{{ client.telephone }}</td>
+                      <td>{{ client.adresse }}</td>
+                      <td>{{ client.ville }}</td>
+                      <td>{{ client.codePostal }}</td>
+                      <td>{{ client.pays }}</td>
+                      <td style="width: 10%;">
+                        <a class="btn btn-sm btn-info" href="{{ path('app_client_expedition', { id: client.id }) }}"><i class="fa fa-eye"></i></a>
+                        <button class="btn btn-sm btn-primary edit-client-btn" data-id="{{ client.id }}" data-nom="{{ client.nom }}" data-prenom="{{ client.prenom }}" data-telephone="{{ client.telephone }}" data-adresse="{{ client.adresse }}" data-ville="{{ client.ville }}" data-codepostal="{{ client.codePostal }}" data-pays="{{ client.pays }}" data-toggle="modal" data-target="#editClientModal"><i class="fa fa-edit"></i></button>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="editClientModal" tabindex="-1" role="dialog" aria-labelledby="editClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editClientModalLabel">Modifier Client</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <form id="editClientForm">
+            <input type="hidden" id="editClientId" />
+            <div class="form-group">
+              <label for="editNom">Nom</label>
+              <input type="text" class="form-control" id="editNom" required />
+            </div>
+            <div class="form-group">
+              <label for="editPrenom">Prénom</label>
+              <input type="text" class="form-control" id="editPrenom" required />
+            </div>
+            <div class="form-group">
+              <label for="editTelephone">Téléphone</label>
+              <input type="text" class="form-control" id="editTelephone" required />
+            </div>
+            <div class="form-group">
+              <label for="editAdresse">Adresse</label>
+              <input type="text" class="form-control" id="editAdresse" required />
+            </div>
+            <div class="form-group">
+              <label for="editVille">Ville</label>
+              <input type="text" class="form-control" id="editVille" required />
+            </div>
+            <div class="form-group">
+              <label for="editCodePostal">Code Postal</label>
+              <input type="text" class="form-control" id="editCodePostal" required />
+            </div>
+            <div class="form-group">
+              <label for="editPays">Pays</label>
+              <input type="text" class="form-control" id="editPays" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Sauvegarder</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/base-colis2.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/dataTables.bootstrap4.min.js"></script>
+{% endblock %}

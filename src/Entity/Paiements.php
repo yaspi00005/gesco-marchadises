@@ -30,6 +30,9 @@ class Paiements
     #[ORM\ManyToOne(inversedBy: 'paiements')]
     private ?User $caissier = null;
 
+    #[ORM\Column]
+    private ?int $remises = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -91,6 +94,18 @@ class Paiements
     public function setCaissier(?User $caissier): static
     {
         $this->caissier = $caissier;
+
+        return $this;
+    }
+
+    public function getRemises(): ?int
+    {
+        return $this->remises;
+    }
+
+    public function setRemises(int $remises): static
+    {
+        $this->remises = $remises;
 
         return $this;
     }

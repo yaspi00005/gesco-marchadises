@@ -44,12 +44,12 @@
                                     <tr>
                                         <td>
                                            
-                                            <h2><a href="profile.html">{{  user.usename }} </h2>
+                                            <h2><a href="">{{  user.usename }} </h2>
                                         </td>
                                         <td>{{  user.prenom }} {{  user.nom }}</td>
                                         <td>{% for role in user.roles %} {% if role == 'ROLE_ADMIN' %} ADMIN {% else %} UTIL {% endif %}{% endfor %}</td>
                                         <td class="text-right" >
-                                            <a href="edit-exam.html" class="btn btn-primary btn-sm mb-1">
+                                            <a href="" class="btn btn-primary btn-sm mb-1">
                                                 <i class="fas fa-pencil-alt" aria-hidden="true"></i>
                                             </a>
                                             <button type="submit" data-toggle="modal" data-target="#delete_employee" class="btn btn-danger btn-sm mb-1">
@@ -67,40 +67,71 @@
             
         </div>
 		</div>
-		 <div id="add_user" class="modal" role="dialog">
-            <div class="modal-dialog">
-                <div class="modal-content modal-md">
-                    <div class="modal-header">
-                        <h4 class="modal-title">Nouveau utilisateur</h4>
-                    </div>
-                    <div class="row">
-                     <div class="modal-body">
-						<div class="col-lg-12">
-                         {{ form_start(registrationForm) }}
-                            <div class="form-group custom-mt-form-group">
+<div id="add_user" class="modal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content modal-md">
+            <div class="modal-header">
+                <h4 class="modal-title">Nouveau utilisateur</h4>
+            </div>
+            <div class="row">
+                <div class="modal-body">
+                    <div class="col-lg-12">
+                        {{ form_start(registrationForm) }}
+                        <div class="form-group custom-mt-form-group">
                             {{ form_widget(registrationForm.usename) }}
-                                <label class="control-label">Téléphone</label><i class="bar"></i>
-                            </div>
-                             <div class="form-group custom-mt-form-group">
-                            {{ form_widget(registrationForm.prenom) }}
-                                <label class="control-label">Prenom</label><i class="bar"></i>
-                            </div>
-                            <div class="form-group custom-mt-form-group">
-                            {{ form_widget(registrationForm.nom) }}
-                                <label class="control-label">Nom</label><i class="bar"></i>
-                            </div>
-                            <div class="form-group custom-mt-form-group">
-                            {{ form_widget(registrationForm.roles) }}
-                                <label class="control-label">Rôle</label><i class="bar"></i>
-                            </div>
-                             <div class="form-group custom-mt-form-group">
-                                <button type="submit" class="btn btn-success">Ajouter</button>
-                            </div>
-                            {{ form_end(registrationForm) }}
+                            <label class="control-label">Username</label><i class="bar"></i>
                         </div>
-                     </div>
-					</div>
+                        <div class="form-group custom-mt-form-group">
+                            {{ form_widget(registrationForm.prenom) }}
+                            <label class="control-label">Prénom</label><i class="bar"></i>
+                        </div>
+                        <div class="form-group custom-mt-form-group">
+                            {{ form_widget(registrationForm.nom) }}
+                            <label class="control-label">Nom</label><i class="bar"></i>
+                        </div>
+                        <div class="form-group custom-mt-form-group">
+                            {{ form_widget(registrationForm.roles) }}
+                            <label class="control-label">Rôle</label><i class="bar"></i>
+                        </div>
+
+                        <!-- Sélection du pays (Caché par défaut) -->
+                        <div class="form-group custom-mt-form-group" id="paysSelectDiv" style="display: none;">
+                            <select class="form-control" id="paysSelect" name="pays">
+                                <option value="">Sélectionner un pays</option>
+                                <option value="Mali">Mali</option>
+                                <option value="Sénégal">Sénégal</option>
+                            </select>
+                            <label class="control-label">Pays</label><i class="bar"></i>
+                        </div>
+
+                        <div class="form-group custom-mt-form-group">
+                            <button type="submit" class="btn btn-success">Ajouter</button>
+                        </div>
+                        {{ form_end(registrationForm) }}
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+{% block javascripts %}
+ <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const roleSelect = document.getElementById('registration_form_roles');
+    const paysSelectDiv = document.getElementById('paysSelectDiv');
+
+    roleSelect.addEventListener('change', function () {
+        if (this.value.includes('Représentant')) {
+            paysSelectDiv.style.display = 'block';
+        } else {
+            paysSelectDiv.style.display = 'none';
+            document.getElementById('paysSelect').value = "";
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -31,7 +31,7 @@ final class ExpeditionsController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-        
+
             $expedition->setNumeroExpeditions(time());
             $entityManager->persist($expedition);
             $entityManager->flush();
@@ -91,5 +91,27 @@ final class ExpeditionsController extends AbstractController
         }
 
         return $this->redirectToRoute('app_expeditions_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+
+    #[Route('/expedition/{id}/update-status', name: 'app_expedition_update_status', methods: ['POST'])]
+    public function updateStatus(
+        Expeditions $expedition,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $newStatus = $request->request->get('statut');
+
+        if (!$newStatus) {
+            $this->addFlash('error', 'Statut non valide.');
+            return $this->redirectToRoute('app_expeditions_index');
+        }
+
+        // Mettre à jour le statut de l'expédition
+        $expedition->setStatut($newStatus);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Statut mis à jour avec succès.');
+        return $this->redirectToRoute('app_expeditions_index');
     }
 }

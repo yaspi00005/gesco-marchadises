@@ -22,11 +22,6 @@ class Expeditions
     #[ORM\Column(length: 100)]
     private ?string $numeroExpeditions = null;
 
-    #[ORM\Column(length: 100)]
-    private ?string $depart = null;
-
-    #[ORM\Column(length: 100)]
-    private ?string $destinations = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $dateExpeditions = null;
@@ -40,12 +35,29 @@ class Expeditions
     #[ORM\OneToMany(targetEntity: BaseColis::class, mappedBy: 'expeditions')]
     private Collection $baseColis;
 
+
+    #[ORM\Column(length: 255)]
+    private ?string $statut = 'En préparation';
+
+    /**
+     * @var Collection<int, BaseDiffusions>
+     */
+    #[ORM\OneToMany(targetEntity: BaseDiffusions::class, mappedBy: 'expeditions')]
+    private Collection $baseDiffusions;
+
+    #[ORM\Column(length: 20)]
+    private ?string $destinations = null;
+
     #[ORM\Column]
-    private ?bool $receptions = null;
+    private ?int $montantTotal = 0;
+
+    #[ORM\Column]
+    private ?int $montantEncaisses = 0;
 
     public function __construct()
     {
         $this->baseColis = new ArrayCollection();
+        $this->baseDiffusions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -77,29 +89,6 @@ class Expeditions
         return $this;
     }
 
-    public function getDepart(): ?string
-    {
-        return $this->depart;
-    }
-
-    public function setDepart(string $depart): static
-    {
-        $this->depart = $depart;
-
-        return $this;
-    }
-
-    public function getDestinations(): ?string
-    {
-        return $this->destinations;
-    }
-
-    public function setDestinations(string $destinations): static
-    {
-        $this->destinations = $destinations;
-
-        return $this;
-    }
 
     public function getDateExpeditions(): ?\DateTimeInterface
     {
@@ -155,14 +144,81 @@ class Expeditions
         return $this;
     }
 
-    public function isReceptions(): ?bool
+
+    public function getStatut(): ?string
     {
-        return $this->receptions;
+        return $this->statut;
     }
 
-    public function setReceptions(bool $receptions): static
+    public function setStatut(string $statut): static
     {
-        $this->receptions = $receptions;
+        $this->statut = $statut;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, BaseDiffusions>
+     */
+    public function getBaseDiffusions(): Collection
+    {
+        return $this->baseDiffusions;
+    }
+
+    public function addBaseDiffusion(BaseDiffusions $baseDiffusion): static
+    {
+        if (!$this->baseDiffusions->contains($baseDiffusion)) {
+            $this->baseDiffusions->add($baseDiffusion);
+            $baseDiffusion->setExpeditions($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBaseDiffusion(BaseDiffusions $baseDiffusion): static
+    {
+        if ($this->baseDiffusions->removeElement($baseDiffusion)) {
+            // set the owning side to null (unless already changed)
+            if ($baseDiffusion->getExpeditions() === $this) {
+                $baseDiffusion->setExpeditions(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDestinations(): ?string
+    {
+        return $this->destinations;
+    }
+
+    public function setDestinations(string $destinations): static
+    {
+        $this->destinations = $destinations;
+
+        return $this;
+    }
+
+    public function getMontantTotal(): ?int
+    {
+        return $this->montantTotal;
+    }
+
+    public function setMontantTotal(int $montantTotal): static
+    {
+        $this->montantTotal = $montantTotal;
+
+        return $this;
+    }
+
+    public function getMontantEncaisses(): ?int
+    {
+        return $this->montantEncaisses;
+    }
+
+    public function setMontantEncaisses(int $montantEncaisses): static
+    {
+        $this->montantEncaisses = $montantEncaisses;
 
         return $this;
     }

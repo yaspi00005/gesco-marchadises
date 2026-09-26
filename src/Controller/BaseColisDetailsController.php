@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/base/colis/details')]
+#[Route('/admin/base/colis/details')]
 final class BaseColisDetailsController extends AbstractController
 {
     #[Route(name: 'app_base_colis_details_index', methods: ['GET'])]
@@ -42,13 +42,13 @@ final class BaseColisDetailsController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_base_colis_details_show', methods: ['GET'])]
+  /*   #[Route('/{id}', name: 'app_base_colis_details_show', methods: ['GET'])]
     public function show(BaseColisDetails $baseColisDetail): Response
     {
         return $this->render('base_colis_details/show.html.twig', [
             'base_colis_detail' => $baseColisDetail,
         ]);
-    }
+    } */
 
     #[Route('/{id}/edit', name: 'app_base_colis_details_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, BaseColisDetails $baseColisDetail, EntityManagerInterface $entityManager): Response

@@ -1,45 +1,46 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Expeditions index{% endblock %}
+{% block title %}
+  Expeditions index
+{% endblock %}
 
 {% block body %}
-    <h1>Expeditions index</h1>
+  <h1>Expeditions index</h1>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>ModeTransport</th>
-                <th>NumeroExpeditions</th>
-                <th>Depart</th>
-                <th>Destinations</th>
-                <th>DateExpeditions</th>
-                <th>DateArrive</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for expedition in expeditions %}
-            <tr>
-                <td>{{ expedition.id }}</td>
-                <td>{{ expedition.modeTransport }}</td>
-                <td>{{ expedition.numeroExpeditions }}</td>
-                <td>{{ expedition.depart }}</td>
-                <td>{{ expedition.destinations }}</td>
-                <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('Y-m-d') : '' }}</td>
-                <td>{{ expedition.dateArrive ? expedition.dateArrive|date('Y-m-d') : '' }}</td>
-                <td>
-                    <a href="{{ path('app_expeditions_show', {'id': expedition.id}) }}">show</a>
-                    <a href="{{ path('app_expeditions_edit', {'id': expedition.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="8">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>ModeTransport</th>
+        <th>NumeroExpeditions</th>
+        <th>Depart</th>
+        <th>Destinations</th>
+        <th>DateExpeditions</th>
+        <th>DateArrive</th>
+        <th>actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for expedition in expeditions %}
+        <tr>
+          <td>{{ expedition.id }}</td>
+          <td>{{ expedition.modeTransport }}</td>
+          <td>{{ expedition.numeroExpeditions }}</td>
+          <td>{{ expedition.statut }}</td>
+          <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('Y-m-d') : '' }}</td>
+          <td>{{ expedition.dateArrive ? expedition.dateArrive|date('Y-m-d') : '' }}</td>
+          <td>
+            <a href="{{ path('app_expeditions_show', { id: expedition.id }) }}">show</a>
+            <a href="{{ path('app_expeditions_edit', { id: expedition.id }) }}">edit</a>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="8">no records found</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
-    <a href="{{ path('app_expeditions_new') }}">Create new</a>
+  <a href="{{ path('app_expeditions_new') }}">Create new</a>
 {% endblock %}

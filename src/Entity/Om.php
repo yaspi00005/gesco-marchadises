@@ -14,7 +14,7 @@ class Om
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $txnid = null;
 
     #[ORM\Column(length: 255)]
@@ -27,10 +27,10 @@ class Om
     private ?string $orderNum = null;
 
     #[ORM\Column]
-    private ?bool $notif = null;
+    private ?bool $notif = false;
 
     #[ORM\Column(length: 255)]
-    private ?string $statuts = null;
+    private ?string $statuts = '';
 
     #[ORM\ManyToOne(inversedBy: 'oms')]
     #[ORM\JoinColumn(nullable: false)]

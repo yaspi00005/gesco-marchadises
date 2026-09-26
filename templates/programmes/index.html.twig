@@ -1,0 +1,208 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Ajouter un Nouveau Client
+{% endblock %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/fullcalendar.min.css" />
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/select2.min.css" />
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/bootstrap-datetimepicker.min.css" />
+    <style>
+    .select2-container {
+      width: 100% !important;
+    }
+    
+    .select2-container .select2-selection {
+      width: 100% !important;
+    }
+    
+    .form-group {
+      width: 100%;
+    }
+    
+    select {
+      width: 100%;
+    }
+    
+    /* Optionnel : Utilisation de Flexbox */
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    
+    .form-group {
+      flex: 1;
+      margin: 5px;
+    }
+  </style>
+{% endblock %}
+
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Planning</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">Planning</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-8 col-4"></div>
+        <div class="col-sm-4 col-8 text-right m-b-30">
+          <a href="#" class="btn btn-primary btn-rounded" data-toggle="modal" data-target="#programmeModal"><i class="fas fa-plus"></i>Programmer un ramassage</a>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card-box m-b-0">
+            <div class="row">
+              <div class="col-md-12">
+                <div id="calendar"></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal none-border" id="event-modal">
+            <div class="modal-dialog">
+              <div class="modal-content modal-md">
+                <div class="modal-header">
+                  <h4 class="modal-title">Add New Event</h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer text-center">
+                  <button type="button" class="btn btn-primary btn-lg save-event">Create event</button>
+                  <button type="button" class="btn btn-danger btn-lg delete-event" data-dismiss="modal">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal pour ajouter un programme -->
+  <div class="modal fade" id="programmeModal" tabindex="-1" role="dialog" aria-labelledby="programmeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="programmeModalLabel">Ajouter un Programme de Ramassage</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <form id="programmeForm">
+            <!-- Sélection du Client -->
+            <div class="form-group">
+              <label for="client">Client</label>
+              <select class="form-control select2" id="client" required>
+                <option value="">Sélectionner un client</option>
+                {% for client in clients %}
+                  <option value="{{ client.id }}">{{ client.prenom  ~' '~ client.nom }} ({{ client.telephone }})</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Date du Ramassage -->
+            <div class="form-group">
+              <label for="dateRamassage">Date de Ramassage</label>
+              <input type="date" class="form-control" id="dateRamassage" required />
+            </div>
+
+            <!-- Commentaires -->
+            <div class="form-group">
+              <label for="commentaires">Commentaires</label>
+              <textarea class="form-control" id="commentaires" rows="3" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Ajouter Programme</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal pour Modifier un Événement -->
+<div class="modal fade" id="editEventModal" tabindex="-1" role="dialog" aria-labelledby="editEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editEventModalLabel">Modifier l'Événement</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editEventForm">
+                    <!-- ID de l'Événement (caché) -->
+                    <input type="hidden" id="editEventId">
+
+                    <!-- Nom de l'Événement -->
+                    <div class="form-group">
+                        <label for="editEventTitle">Client</label>
+                        <input type="text" class="form-control" id="editEventTitle" required>
+                    </div>
+
+                    <!-- Sélection du Statut -->
+                    <div class="form-group">
+                        <label for="editEventStatus">Statut</label>
+                        <select class="form-control" id="editEventStatus">
+                            <option value="Non récupéré">Non récupéré</option>
+                            <option value="Récupéré">Récupéré</option>
+                            <option value="Annulé">Annulé</option>
+                            
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Mettre à Jour</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/fullcalendar.min.js"></script>
+ {#  <script type="text/javascript" src="{{ domaine }}/assets/js/jquery.fullcalendar.jss"></script> #}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/bootstrap-datetimepicker.min.js"></script>
+{#   <script type="text/javascript" src="{{ domaine }}/assets/js/app.js"></script>
+ #}  <script type="text/javascript" src="{{ domaine }}/assets/js/ramassages.js"></script>
+  <script>
+  {#   $(document).ready(function () {
+      $('#programmeForm').on('submit', function (e) {
+        e.preventDefault()
+    
+        $.ajax({
+          url: "{{ path('programmes_add') }}",
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+            client_id: $('#client').val(),
+            dateRamassages: $('#dateRamassage').val(),
+            commentaires: $('#commentaires').val(),
+          }),
+          success: function (response) {
+            alert('Programme ajouté avec succès !')
+            $('#programmeModal').modal('hide')
+            location.reload() // Rafraîchir la page après ajout
+          },
+          error: function (xhr) {
+            alert("Erreur lors de l'ajout du programme !")
+          }
+        })
+      })
+    }) #}
+    $('.select2').select2()
+  </script>
+{% endblock %}

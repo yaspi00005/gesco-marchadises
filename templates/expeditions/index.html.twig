@@ -58,24 +58,32 @@
                   <tr>
                     <th style="min-width:50px;">Numero Expeditions</th>
                     <th style="min-width:70px;">Mode Transport</th>
-                    <th style="min-width:70px;">Départ</th>
-                    <th style="min-width:70px;">Destinations</th>
+                     <th style="min-width:70px;">Destinations</th>
+                    <th style="min-width:70px;">Statut</th>
                     <th style="min-width:50px;">Date Expéditions</th>
-                    <th class="text-right" style="min-width:50px;">Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {% for expedition in expeditions %}
-                    <tr>
-                      <td>EX-{{ expedition.numeroExpeditions }}</td>
-                      <td>{{ expedition.modeTransport }}</td>
-                      <td>{{ expedition.depart }}</td>
-                      <td>{{ expedition.destinations }}</td>
-                      <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('Y-m-d') : '' }}</td>
-                      <td>{{ expedition.dateArrive ? expedition.dateArrive|date('Y-m-d') : '' }}</td>
-                      <td class="text-right"></td>
-                    </tr>
-                  {% endfor %}
+  {% for expedition in expeditions %}
+    <tr>
+      <td>EX-{{ expedition.numeroExpeditions }}</td>
+      <td>{{ expedition.modeTransport }}</td>
+       <td>{{ expedition.destinations }}</td>
+      <td>
+        <form method="post" action="{{ path('app_expedition_update_status', { id: expedition.id }) }}">
+          <select name="statut" class="form-control">
+            <option value="En préparation" {% if expedition.statut == 'En préparation' %}selected{% endif %}>En préparation</option>
+            <option value="En transit" {% if expedition.statut == 'En transit' %}selected{% endif %}>En transit</option>
+            <option value="Arrivé" {% if expedition.statut == 'Arrivé' %}selected{% endif %}>Arrivé</option>
+          </select>
+          <button type="submit" class="btn btn-primary btn-sm mt-2">Mettre à jour</button>
+        </form>
+      </td>
+      <td>{{ expedition.dateExpeditions ? expedition.dateExpeditions|date('Y-m-d') : '' }}</td>
+     
+    </tr>
+  {% endfor %}
+
                 </tbody>
               </table>
             </div>

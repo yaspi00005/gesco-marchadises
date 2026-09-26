@@ -1,0 +1,177 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Stocks index
+{% endblock %}
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/dataTables.bootstrap4.min.css" />
+{% endblock %}
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Paiements</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">
+                <a href="">Expéditions</a>
+              </li>
+              <li class="list-inline-item">Paiement</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4 col-3"></div>
+      </div>
+      <div class="content-page">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="dash-widget dash-widget5">
+              <span class="dash-widget-icon bg-primary"><i class="fa fa-user"></i></span>
+              <div class="dash-widget-info">
+                <h3>{{ clients_count }}</h3>
+                <span>Clients</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="dash-widget dash-widget5">
+              <span class="dash-widget-icon bg-success"><i class="fa fa-money"></i></span>
+              <div class="dash-widget-info">
+                <h3>{{ montant_encaisse|number_format(2, ',', ' ') }} €</h3>
+                <span>Montant Encaissé</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="dash-widget dash-widget5">
+              <span class="dash-widget-icon bg-danger"><i class="fa fa-credit-card"></i></span>
+              <div class="dash-widget-info">
+                <h3>{{ montant_restant|number_format(2, ',', ' ') }} €</h3>
+                <span>Montant Restant</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="table-responsive">
+              <h3 class="mt-4">Liste des Colis</h3>
+              <table class="table table-striped custom-table datatable">
+                <thead>
+                  <tr>
+                    <th>Numéro de Colis</th>
+                    <th>Client</th>
+                    <th>Frais d’Expédition</th>
+                    <th>Montant Payé</th>
+                    <th>Remise</th>
+                    <th>Montant Restant</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for colis in base_colis %}
+                    {% set details = montantsParColis[colis.id] %}
+                    <tr>
+                      <td>{{ colis.numeroSuivi }}</td>
+                      <td>{{ colis.clients.nom }} {{ colis.clients.prenom }}</td>
+                      <td>{{ details.total|number_format(2, ',', ' ') }} €</td>
+                      <td>{{ details.paye|number_format(2, ',', ' ') }} €</td>
+                      <td>{{ details.remises|number_format(2, ',', ' ') }} €</td>
+                       <td>{{ details.restant|number_format(2, ',', ' ') }} €</td>
+                      <td>
+                        <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#paiementModal{{ colis.id }}">Voir Paiements</button>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="6">Aucun colis trouvé pour cette expédition.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              <h3 class="mt-4">Encaissements par Chauffeur</h3>
+              <div class="table-responsive">
+                <table class="table table-striped custom-table">
+                  <thead>
+                    <tr>
+                      <th style="min-width:91px;">Nom du chauffeur</th>
+                      <th style="min-width:50px;">Total des Encaissements</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for encaissement in encaissements_par_caissier %}
+                      <tr>
+                        <td>{{ encaissement.prenom ~' '~ encaissement.nom }}</td>
+                        <td>{{ encaissement.total|number_format(2, ',', ' ') }} €</td>
+                      </tr>
+                    {% else %}
+                      <tr>
+                        <td colspan="2">Aucun encaissement trouvé.</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals pour les détails des paiements -->
+  {% for colis in base_colis %}
+    <div class="modal fade" id="paiementModal{{ colis.id }}" tabindex="-1" role="dialog" aria-labelledby="paiementModalLabel{{ colis.id }}" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="paiementModalLabel{{ colis.id }}">Détails des Paiements - Colis {{ colis.numeroSuivi }}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Montant Payé</th>
+                  <th>Mode de Paiement</th>
+                  <th>Date du Paiement</th>
+                  <th>Chauffeur</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for paiement in paiements[colis.id] %}
+                  <tr>
+                    <td>{{ paiement.montants|number_format(2, ',', ' ') }} €</td>
+                    <td>{{ paiement.modePaiement }}</td>
+                    <td>{{ paiement.datePaiements|date('d/m/Y') }}</td>
+                    <td>{{ paiement.caissier.prenom ~' '~ paiement.caissier.nom }}</td>
+                  </tr>
+                {% else %}
+                  <tr>
+                    <td colspan="4">Aucun paiement enregistré pour ce colis.</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+{% endblock %}
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/traitements.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/dataTables.bootstrap4.min.js"></script>
+{% endblock %}

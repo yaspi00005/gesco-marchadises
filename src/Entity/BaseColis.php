@@ -45,10 +45,6 @@ class BaseColis
     #[ORM\Column(length: 255 , nullable:true)]
     private ?string $paiement = '-';
 
-    #[ORM\ManyToOne(inversedBy: 'baseColisDestinateurs')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?user $destinateurs = null;
-
     /**
      * @var Collection<int, BaseColisDetails>
      */
@@ -61,8 +57,6 @@ class BaseColis
     #[ORM\Column(length: 100)]
     private ?string $statut = 'En préparation';
 
-    #[ORM\Column]
-    private ?int $poidsVolumeTotal = 0;
 
     #[ORM\Column]
     private ?int $unites = null;
@@ -84,6 +78,28 @@ class BaseColis
      */
     #[ORM\OneToMany(targetEntity: Om::class, mappedBy: 'colis')]
     private Collection $oms;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $dateUpdate = null;
+
+    #[ORM\ManyToOne(inversedBy: 'baseColis')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Clients $clients = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $destinateursNom = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $destinateursTelephones = null;
+
+    #[ORM\Column(length: 10)]
+    private ?string $code = null;
+
+    #[ORM\Column(length: 10)]
+    private ?int $montantPaye = 0;
+
+    #[ORM\Column]
+    private ?int $remises = 0;
 
     public function __construct()
     {
@@ -206,17 +222,6 @@ class BaseColis
         return $this;
     }
 
-    public function getDestinateurs(): ?user
-    {
-        return $this->destinateurs;
-    }
-
-    public function setDestinateurs(?user $destinateurs): static
-    {
-        $this->destinateurs = $destinateurs;
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, BaseColisDetails>
@@ -272,17 +277,7 @@ class BaseColis
         return $this;
     }
 
-    public function getPoidsVolumeTotal(): ?int
-    {
-        return $this->poidsVolumeTotal;
-    }
-
-    public function setPoidsVolumeTotal(int $poidsVolumeTotal): static
-    {
-        $this->poidsVolumeTotal = $poidsVolumeTotal;
-
-        return $this;
-    }
+   
 
     public function getUnites(): ?int
     {
@@ -376,6 +371,90 @@ class BaseColis
                 $om->setColis(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDateUpdate(): ?\DateTimeInterface
+    {
+        return $this->dateUpdate;
+    }
+
+    public function setDateUpdate(\DateTimeInterface $dateUpdate): static
+    {
+        $this->dateUpdate = $dateUpdate;
+
+        return $this;
+    }
+
+    public function getClients(): ?Clients
+    {
+        return $this->clients;
+    }
+
+    public function setClients(?Clients $clients): static
+    {
+        $this->clients = $clients;
+
+        return $this;
+    }
+
+    public function getDestinateursNom(): ?string
+    {
+        return $this->destinateursNom;
+    }
+
+    public function setDestinateursNom(string $destinateursNom): static
+    {
+        $this->destinateursNom = $destinateursNom;
+
+        return $this;
+    }
+
+    public function getDestinateursTelephones(): ?string
+    {
+        return $this->destinateursTelephones;
+    }
+
+    public function setDestinateursTelephones(string $destinateursTelephones): static
+    {
+        $this->destinateursTelephones = $destinateursTelephones;
+
+        return $this;
+    }
+
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(string $code): static
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    public function getMontantPaye(): ?int
+    {
+        return $this->montantPaye;
+    }
+
+    public function setMontantPaye(int $montantPaye): static
+    {
+        $this->montantPaye = $montantPaye;
+
+        return $this;
+    }
+
+    public function getRemises(): ?int
+    {
+        return $this->remises;
+    }
+
+    public function setRemises(int $remises): static
+    {
+        $this->remises = $remises;
 
         return $this;
     }

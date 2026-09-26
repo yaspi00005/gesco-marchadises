@@ -38,7 +38,11 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
          - { path: ^/admin, roles: ROLE_ADMIN }
-         - { path: ^/suivi-colis, roles: ROLE_UTIL }
+         - { path: ^/ramassage, roles: ROLE_RAMASSAGE }
+         - { path: ^/pays, roles: ROLE_REPRESENTANT }
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_REPRESENTANT,ROLE_RAMASSAGE]
+        
 
 when@test:
     security:

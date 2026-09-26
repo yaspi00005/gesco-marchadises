@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\RegistrationFormUserType;
+use App\Repository\BaseColisRepository;
 use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
 use App\Security\UserAuthenticator;
@@ -35,7 +36,7 @@ class SecurityController extends AbstractController
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_dashboard');
+            return $this->redirectToRoute('redirect_colis');
         }
 
         // get the login error if there is one
@@ -98,7 +99,7 @@ class SecurityController extends AbstractController
                     'app_verify_email',
                     $user,
                     (new TemplatedEmail())
-                        ->from(new Address('info@aircargo.gescoflex.com', 'AIR CARGO'))
+                        ->from(new Address('info@Sotrama.gescoflex.com', 'Sotrama'))
                         ->to((string) $user->getEmail())
                         ->subject('Please Confirm your Email')
                         ->htmlTemplate('registration/confirmation_email.html.twig')
@@ -142,5 +143,25 @@ class SecurityController extends AbstractController
         $this->addFlash('success', 'Your email address has been verified.');
 
         return $this->redirectToRoute('app_register');
+    }
+
+    #[Route('/view/details/{url}', name: 'colis_details_clt', methods: ['GET'])]
+    public function details($url, BaseColisRepository $baseColisRepository): Response
+    {
+        return $this->render('clients/details.html.twig', [
+            'colis' => $baseColisRepository->findOneBy(['url' => $url]),
+        ]);
+    }
+
+    #[Route('/redirect-colis', name: 'redirect_colis')]
+    public function redirect_req(): Response
+    {
+        $user = $this->getUser();
+
+        if ($this->isGranted('ROLE_REPRESENTANT')) {
+            return $this->redirectToRoute('app_base_colis_index');
+        }
+
+        return $this->redirectToRoute('app_base_colis_index_rama');
     }
 }

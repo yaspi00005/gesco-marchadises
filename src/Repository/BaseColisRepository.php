@@ -31,6 +31,9 @@ class BaseColisRepository extends ServiceEntityRepository
     }
 
 
+    
+
+
 
 
     public function findByFiltre($client)
@@ -50,6 +53,32 @@ class BaseColisRepository extends ServiceEntityRepository
             ->setMaxResults(30)
             ->getQuery()->getResult();
     }
+
+
+    public function countColisByStatut($statut , $user): int
+    {
+        return (int) $this->createQueryBuilder('b')
+            ->select('count(b.id)')
+            ->where('b.statut = :statut')
+            ->andWhere('b.destinateurs = :user')
+            ->setParameter('statut', $statut)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function findByColis($expediteurs): array
+    {
+        return $this->createQueryBuilder('b')
+            ->join('b.expeditions', 'e') // Relation entre BaseColis et Expeditions
+            ->where('e.statut = :statut')
+            ->andwhere('b.expediteurs = :expediteurs')
+            ->setParameter('statut', 'En préparation')
+            ->setParameter('expediteurs', $expediteurs)
+            ->getQuery()
+            ->getResult();
+    }
+
 
     //    public function findOneBySomeField($value): ?BaseColis
     //    {

@@ -12,19 +12,19 @@ class Configom
      *
      * @var string
      */
-    protected $clientId = 'mBisuo1KNkb3Iy6N4OUSBQNkgKjbqsmw';
+    protected $clientId = 'CpBmTG0SwT0WIV2ltRlKtrqOUXrAT3Xe';
     /**
      * Client Secret. Used to sign/crypt the requests.
      *
      * @var string
      */
-    protected $clientSecret = 'i9tpEa74RPOPS8uQ';
+    protected $clientSecret = 'nECx5fW9wbZ1orTNMg3ZhV1BiQRAa6EIqF2B8drjUQVM';
     /**
      * The Token will be used for all further API calls.
      *
      * @var string
      */
-    protected $token = '';
+    protected $token = 'Q3BCbVRHMFN3VDBXSVYybHRSbEt0cnFPVVhyQVQzWGU6bkVDeDVmVzl3Yloxb3JUTk1nM1poVjFCaVFSQWE2RUlxRjJCOGRyalVRVk0=';
 
 
     /**
@@ -94,7 +94,7 @@ class Configom
 
     public function checkTransactionStatus($order_id, $amount, $pay_token)
     {
-        $url = self::BASE_URL . '/orange-money-webpay/dev/v1/transactionstatus';
+        $url = self::BASE_URL . '/orange-money-webpay/ml/v1/transactionstatus';
         $headers = array(
             'Content-Type: application/json',
             'Authorization: Bearer ' . $this->getToken(),
@@ -120,7 +120,7 @@ class Configom
         $urlnotify
     ) {
 
-        $url = self::BASE_URL . '/orange-money-webpay/dev/v1/webpayment';
+        $url = self::BASE_URL . '/orange-money-webpay/ml/v1/webpayment';
         $headers = array(
             'Content-Type: application/json',
             'Authorization: Bearer ' . $this->getToken(),
@@ -129,15 +129,15 @@ class Configom
         );
         if (!empty($amount)) {
             $payData = array(
-                "merchant_key"  => "840cf2e0",
-                "currency"      => 'OUV',
+                "merchant_key"  => "53d12132",
+                "currency"      => 'XOF',
                 "order_id"      => $order_id,
                 "amount"        => $amount,
                 "lang"          => "fr",
                 "return_url"    => $urlreturn,
                 "cancel_url"    => $urlcancel,
                 "notif_url"     => $urlnotify,
-                "reference"     => "Drépa USSD.",
+                "reference"     => "DREPA USSD",
             );;
         }
         return $this->callApi($headers, $payData, $url, 'POST', 201, true);

@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Paiements;
 use App\Form\PaiementsType;
+use App\Repository\BaseColisRepository;
+use App\Repository\ExpeditionsRepository;
 use App\Repository\PaiementsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,12 +18,80 @@ use Symfony\Component\Routing\Attribute\Route;
 final class PaiementsController extends AbstractController
 {
     #[Route(name: 'app_paiements_index', methods: ['GET'])]
-    public function index(PaiementsRepository $paiementsRepository): Response
+    public function index(ExpeditionsRepository $ExpeditionsRepository): Response
     {
         return $this->render('paiements/index.html.twig', [
-            'paiements' => $paiementsRepository->findAll(),
+            'expeditions' => $ExpeditionsRepository->findAll(),
         ]);
     }
+
+
+    #[Route('/liste_paiement/{numeroExpeditions}', name: 'liste_paiement', methods: ['GET'])]
+    public function listePaiement(
+        BaseColisRepository $baseColisRepository,
+        PaiementsRepository $paiementsRepository,
+        ExpeditionsRepository $expeditionsRepository,
+        EntityManagerInterface $entityManager,
+        $numeroExpeditions
+    ): Response {
+        $expedition = $expeditionsRepository->findOneBy(['numeroExpeditions' => $numeroExpeditions]);
+
+        if (!$expedition) {
+            throw $this->createNotFoundException("Expédition non trouvée !");
+        }
+
+        $baseColis = $baseColisRepository->findBy(['expeditions' => $expedition]);
+
+        // Récupérer les paiements associés aux colis de cette expédition
+        $paiements = [];
+        $montantsParColis = [];
+
+        foreach ($baseColis as $colis) {
+            $paiementsColis = $paiementsRepository->findBy(['colis' => $colis]);
+            $paiements[$colis->getId()] = $paiementsColis;
+
+            // Calcul du montant total payé pour chaque colis
+            $montantPaye = array_sum(array_map(fn($paiement) => $paiement->getMontants(), $paiementsColis));
+            $montantsParColis[$colis->getId()] = [
+                'total' => $colis->getFraisExpeditions(),
+                'paye' => $montantPaye,
+                'remises' => $colis->getRemises(),
+                'restant' => max(0, $colis->getFraisExpeditions() - $montantPaye - $colis->getRemises()),
+            ];
+        }
+
+        // Compter le nombre de clients uniques
+        $clientsCount = count(array_unique(array_map(fn($coli) => $coli->getClients()->getId(), $baseColis)));
+
+        // Calcul du montant total encaissé et restant pour toute l'expédition
+        $montantTotal = array_sum(array_map(fn($coli) => $coli->getFraisExpeditions(), $baseColis));
+        $montantEncaisse = array_sum(array_column($montantsParColis, 'paye'));
+        $montantRestant = $montantTotal - $montantEncaisse;
+
+        $encaissementsParCaissier = $entityManager->createQuery("
+        SELECT u.nom, u.prenom, SUM(p.montants) as total
+        FROM App\Entity\Paiements p
+        JOIN p.caissier u
+        WHERE p.colis IN (:colis)
+        GROUP BY u.nom, u.prenom
+    ")->setParameter('colis', $baseColis)->getResult();
+
+
+        return $this->render('paiements/paiement.html.twig', [
+            'base_colis' => $baseColis,
+            'paiements' => $paiements,
+            'montantsParColis' => $montantsParColis,
+            'clients_count' => $clientsCount,
+            'montant_encaisse' => $montantEncaisse,
+            'montant_restant' => $montantRestant,
+            'encaissements_par_caissier' => $encaissementsParCaissier,
+            'numeroExpeditions' => $numeroExpeditions
+        ]);
+    }
+
+
+
+
 
     #[Route('/new', name: 'app_paiements_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response

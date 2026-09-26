@@ -17,11 +17,29 @@ class ExpeditionsRepository extends ServiceEntityRepository
     }
 
 
-    
-   /**
-    * @return Arrivages[] Returns an array of Arrivages objects
-    */
-    public function findBydate($debut,$fin): array
+
+    /**
+     * Récupérer les paiements en fonction d'une expédition donnée
+     *
+     * @param Expeditions $expedition
+     * @return Paiements[]
+     */
+    public function findByExpedition($expeditionId): array
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.colis', 'c') // Jointure avec BaseColis
+            ->join('c.expeditions', 'e') // Jointure avec Expeditions
+            ->where('e.id = :expeditionId')
+            ->setParameter('expeditionId', $expeditionId)
+            ->getQuery()
+            ->getResult();
+    }
+
+
+    /**
+     * @return Arrivages[] Returns an array of Arrivages objects
+     */
+    public function findBydate($debut, $fin): array
     {
         return $this->createQueryBuilder('a')
             ->andWhere('DATE(a.dateExpeditions) BETWEEN :debut AND :fin')

@@ -1,0 +1,258 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Stocks index
+{% endblock %}
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/dataTables.bootstrap4.min.css" />
+{% endblock %}
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Gestion des colis</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+              <li class="list-inline-item">
+                <a href="/">Arrivages</a>
+              </li>
+              <li class="list-inline-item">Liste des colis</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4 col-3"></div>
+      </div>
+      <div class="content-page">
+        {# <div class="row filter-row">
+          <div class="col-sm-6 col-md-3">
+            <div class="form-group custom-mt-form-group">
+              <input type="text" id="num_suivi" />
+              <label class="control-label">Numéro de suivi</label><i class="bar"></i>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-3">
+            <div class="form-group custom-mt-form-group">
+              <input type="date" value="null" id="date" />
+              <label class="control-label">Date</label><i class="bar"></i>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-md-3">
+            <a href="#" class="btn btn-success btn-block mt-4 mb-2 charger" data-type="details">Charger</a>
+          </div>
+        </div> #}
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="table-responsive">
+              <table class="table table-striped m-b-0 datatable">
+                <thead>
+                  <tr>
+                    <th>Numéro de colis</th>
+                    <th>Code de retrait</th>
+                    <th>Type d'Expédition</th>
+                    <th>Unité</th>
+                    <th>Frais d’expédition</th>
+                    <th>État du colis</th>
+                    <th>Paiement</th>
+                    <th>Remise</th>
+                    <th>Montant restant</th>
+                    <th>Date de réception</th>
+                    <th>Expéditeur</th>
+                    <th>Expédition</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody class="journal">
+                  {% for base_coli in base_colis %}
+                    <tr>
+                      <td class="text-left">
+                        <a href="{{ path('colis_details_clt', { url: base_coli.url }) }}">{{ base_coli.numeroSuivi }}</a>
+                      </td>
+                      <td class="text-left">{{ base_coli.code }}</td>
+                      <td class="text-left">{{ base_coli.typeExpeditions }}</td>
+                      <td class="text-left">{{ base_coli.unites }}</td>
+                      <td class="text-left">{{ base_coli.fraisExpeditions|number_format(0, '.', ',') }}</td>
+                      <td class="text-right">
+                        <a class="btn btn-sm btn-rounded 
+                            {% if base_coli.statut == 'En Préparation' %}
+
+                          {% elseif base_coli.statut == 'Expédié' %}
+
+                          {% elseif base_coli.statut == 'Récupéré' %}
+
+                          {% elseif base_coli.statut == 'Annulé' %}
+
+                          {% endif %}"
+                          href="#">
+                          {{ base_coli.statut }}
+                        </a>
+                      </td>
+                      <td>
+                        {{ base_coli.statutPaiements }}
+                        {% if base_coli.fraisExpeditions - base_coli.montantPaye - base_coli.remises != 0 %}
+                          <button class="btn btn-primary btn-sm encaisser-btn-pays" data-id="{{ base_coli.id }}" data-montant-total="{{ base_coli.fraisExpeditions }}" data-montant-paye="{{ base_coli.montantPaye }}" data-montant-restant="{{ base_coli.fraisExpeditions - base_coli.montantPaye - base_coli.remises }}">Encaisser</button>
+                        {% endif %}
+                      </td>
+                      <td>{{ base_coli.remises|number_format(0, '.', ',') }}</td>
+                      <td>{{ (base_coli.fraisExpeditions - base_coli.montantPaye - base_coli.remises)|number_format(0, '.', ',') }}</td>
+                      <td>{{ base_coli.dateReceptions ? base_coli.dateReceptions|date('d-m-Y') }}</td>
+                      <td>{{ base_coli.clients.prenom ~ ' ' ~ base_coli.clients.nom }}</td>
+                      <td>
+                        <a href="#">{{ base_coli.expeditions.destinations ~ '-' }}{{ base_coli.expeditions.dateExpeditions ? base_coli.expeditions.dateExpeditions|date('Y-m-d') : '' }}</a>
+                      </td>
+                      <td>
+                        {% if base_coli.fraisExpeditions - base_coli.montantPaye - base_coli.remises == 0 and base_coli.statut != 'Récupéré' %}
+                          <button class="btn btn-success btn-sm recuperer-colis-btn" data-url="{{ base_coli.url }}">Récupéré</button>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="11">no records found</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal d'Encaissement -->
+  <!-- Modal d'Encaissement -->
+  <div class="modal fade" id="paiementModal" tabindex="-1" aria-labelledby="paiementModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="paiementModalLabel">Encaisser un Paiement</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <form id="paiementForm">
+            <input type="hidden" id="colisId" name="colisId" />
+
+            <!-- Montant Total -->
+            <div class="form-group">
+              <label>Montant Total :</label>
+              <input type="text" class="form-control" id="montantTotal" readonly />
+            </div>
+
+            <!-- Montant Déjà Payé -->
+            <div class="form-group">
+              <label>Montant Déjà Payé :</label>
+              <input type="text" class="form-control" id="montantDejaPaye" readonly />
+            </div>
+
+            <!-- Montant Restant (C'est ce montant qui sera payé) -->
+            <div class="form-group">
+              <label>Montant à Payer :</label>
+              <input type="text" class="form-control" id="montantRestant" readonly />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Encaisser</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/dataTables.bootstrap4.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.encaisser-btn-pays').forEach((button) => {
+        button.addEventListener('click', function () {
+          const colisId = this.getAttribute('data-id')
+          const montantTotal = parseFloat(this.getAttribute('data-montant-total'))
+          const montantDejaPaye = parseFloat(this.getAttribute('data-montant-paye')) || 0
+          const montantRestant = montantTotal - montantDejaPaye
+    
+          document.getElementById('colisId').value = colisId
+          document.getElementById('montantTotal').value = montantTotal.toFixed(2) + ' €'
+          document.getElementById('montantDejaPaye').value = montantDejaPaye.toFixed(2) + ' €'
+          document.getElementById('montantRestant').value = montantRestant.toFixed(2) + ' €'
+    
+          $('#paiementModal').modal('show')
+        })
+      })
+    
+      // Validation et envoi du formulaire
+      document.getElementById('paiementForm').addEventListener('submit', function (e) {
+        e.preventDefault()
+    
+        const colisId = document.getElementById('colisId').value
+        let montantPayé = parseFloat(document.getElementById('montantRestant').value)
+    
+        if (montantPayé < 0) {
+          alert('Le montant payé ne peut pas être négatif !')
+          return
+        }
+    
+        fetch(`/pays/base/colis/encaisser/${colisId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({
+            montantPayé: montantPayé
+          })
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            alert(data.message)
+            $('#paiementModal').modal('hide')
+            location.reload()
+          })
+          .catch((error) => {
+            console.error('Erreur:', error)
+            alert('Erreur lors du paiement.')
+          })
+      })
+    })
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.recuperer-colis-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const colisId = this.getAttribute('data-url');
+
+            if (confirm("Confirmez-vous que ce colis est récupéré ?")) {
+                fetch(`/pays/base/colis/marquer-recupere/${colisId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Le colis a été marqué comme récupéré !");
+                        location.reload();
+                    } else {
+                        alert("Erreur : " + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert("Impossible de changer le statut.");
+                });
+            }
+        });
+    });
+});
+
+  </script>
+{% endblock %}

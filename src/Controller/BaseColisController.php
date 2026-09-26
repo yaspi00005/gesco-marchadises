@@ -2,14 +2,17 @@
 
 namespace App\Controller;
 
+use App\Controller\config\Configsms;
 use App\Entity\BaseColis;
 use App\Entity\BaseColisDetails;
 use App\Entity\Paiements;
 use App\Form\BaseColisDetailsType;
 use App\Form\BaseColisType;
 use App\Repository\BaseColisRepository;
+use App\Repository\ExpeditionsRepository;
 use App\Repository\PaiementsRepository;
 use App\Repository\TypeMarchandisesRepository;
+use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -18,115 +21,203 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Endroid\QrCode\Builder\Builder;
-use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\Label\Label;
-use Endroid\QrCode\QrCode;
-use Endroid\QrCode\Writer\PngWriter;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-#[Route('/admin/base/colis')]
+#[Route('/pays/base/colis')]
 final class BaseColisController extends AbstractController
 {
     #[Route(name: 'app_base_colis_index', methods: ['GET'])]
-    public function index(BaseColisRepository $baseColisRepository): Response
-    {
-        return $this->render('base_colis/index.html.twig', [
-            'base_colis' => $baseColisRepository->findAll(),
-        ]);
-    }
+    public function index(
+        ExpeditionsRepository $expeditionsRepository,
+    ): Response {
+        // Récupérer l'utilisateur connecté
+        $user = $this->getUser();
 
-    #[Route('/new', name: 'app_base_colis_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, TypeMarchandisesRepository $typeMarchandises, BaseColisRepository $colis, EntityManagerInterface $entityManager, SluggerInterface $slugger, #[Autowire('%kernel.project_dir%/public/uploads/')] string $photoDirectory): Response
-    {
-        $baseColi = new BaseColis();
-        $form = $this->createForm(BaseColisType::class, $baseColi);
-        $form->handleRequest($request);
-
-
-        $baseColisDetail = new BaseColisDetails();
-        $formColis = $this->createForm(BaseColisDetailsType::class, $baseColisDetail);
-        $formColis->handleRequest($request);
-
-
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $mois = $baseColi->getDateReceptions()->format('m');
-            $annee = $baseColi->getDateReceptions()->format('Y');
-            $nbre_mois = $colis->countByColi($mois, $annee)[0][1] + 1;
-
-            $typeMarchandises = $_POST['typeMarchandises'];
-            $poidsVolume = $_POST['poidsVolume'];
-            $prixPoidsVolume = $_POST['prixPoidsVolume'];
-            $photos = $_FILES['photos'];
-
-
-
-            $baseColi->setExpediteurs($this->getUser());
-            $baseColi->setUnites(count($poidsVolume));
-            $numeroSuivi = $mois . $annee . '-' . $nbre_mois . '-' . $colis->countByColi(null, null)[0][1] + 1;
-            $baseColi->setNumeroSuivi($numeroSuivi);
-
-            /*  $entityManager->persist($baseColi);
-            $entityManager->flush(); */
-
-
-
-            if (isset($poidsVolume)) {
-                foreach ($poidsVolume as $key => $value) {
-                    $baseColisDetail = new BaseColisDetails();
-
-                    $baseColisDetail->setTypeMarchandises($typeMarchandises[$key]);
-                    $baseColisDetail->setPoidsVolume($poidsVolume[$key]);
-                    $baseColisDetail->setPrixPoidsVolume($prixPoidsVolume[$key]);
-                    $baseColisDetail->setMontantTotal($poidsVolume[$key] * $prixPoidsVolume[$key]);
-                    $baseColisDetail->setColis($baseColi);
-                    $baseColisDetail->setNumeroColis($mois . $annee);
-
-                    if (isset($_FILES['photos'])) {
-                        $originalFilename = pathinfo($_FILES['photos']['name'][$key], PATHINFO_FILENAME);
-                        $extension = pathinfo($_FILES['photos']['name'][$key], PATHINFO_EXTENSION);
-                        $safeFilename = preg_replace('/[^a-zA-Z0-9-_]/', '', $originalFilename);
-                        $newFilename = $safeFilename . '.' . $extension;
-
-                        if (move_uploaded_file($_FILES['photos']['tmp_name'][$key], $photoDirectory . $newFilename)) {
-                            $baseColisDetail->setPhoto($newFilename);
-                        } else {
-                            echo "Failed to upload: " . $_FILES['photos']['name'][$key] . "<br>";
-                        }
-                    }
-
-                    $entityManager->persist($baseColisDetail);
-                    /*  $entityManager->flush(); */
-                }
+        // Vérifier si l'utilisateur est un admin (il voit toutes les expéditions)
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $expeditions = $expeditionsRepository->findAll();
+        }
+        // Si l'utilisateur est un représentant de pays, il ne voit que les expéditions qui lui sont destinées
+        elseif ($this->isGranted('ROLE_REPRESENTANT')) {
+            if ($this->isGranted('ROLE_MALI')) {
+                $pays = 'Mali';
+            } else {
+                $pays = 'Sénégal';
             }
-
-            // Générer le QR code
-            $qrCode = new QrCode("colis:" . md5($numeroSuivi));
-            $writer = new PngWriter();
-
-            $writer = new PngWriter();
-            $qrCodeFilePath = $photoDirectory . 'qrcode_' . $numeroSuivi . '.png';
-            $result = $writer->write($qrCode);
-            $result->saveToFile($qrCodeFilePath);
-
-            // Sauvegarder le chemin du QR code dans la base
-            $baseColi->setQrCodePath('qrcode_' . $numeroSuivi . '.png');
-            $baseColi->setUrl(md5($numeroSuivi));
-            $entityManager->persist($baseColi);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('conf_enregistrement', ['numeroSuivi' => $numeroSuivi], Response::HTTP_SEE_OTHER);
+            $expeditions = $expeditionsRepository->findBy(['destinations' => $pays]);
+        }
+        // Autres utilisateurs (interdit)
+        else {
+            throw $this->createAccessDeniedException("Vous n'avez pas accès à cette page.");
         }
 
-        return $this->render('base_colis/new.html.twig', [
-            'base_coli' => $baseColi,
-            'form' => $form,
-            'formColis' => $formColis,
-            'typeMarchandises' => $typeMarchandises->findAll()
+        return $this->render('base_colis/index.html.twig', [
+            'Expeditions' => $expeditions,
         ]);
     }
+
+
+
+    #[Route('/base_colis/liste/{expedition}', name: 'app_base_colis_liste', methods: ['GET'])]
+    public function liste(
+        string $expedition,
+        BaseColisRepository $baseColisRepository,
+        ExpeditionsRepository $expeditionsRepository,
+    ): Response {
+        $user = $this->getUser();
+
+        // Récupérer l'expédition par son numéro
+        $expeditionEntity = $expeditionsRepository->findOneBy(['numeroExpeditions' => $expedition]);
+
+        if (!$expeditionEntity) {
+            throw $this->createNotFoundException("Expédition introuvable !");
+        }
+
+        // Vérifier les permissions selon le rôle
+        if ($this->isGranted('ROLE_ADMIN')) {
+            // L'admin voit tous les colis
+            $colis = $baseColisRepository->findBy(['expeditions' => $expeditionEntity]);
+        } elseif ($this->isGranted('ROLE_REPRESENTANT')) { 
+            // Déterminer le pays de l'utilisateur
+            if ($this->isGranted('ROLE_MALI')) {
+                $pays = 'Mali';
+            } elseif ($this->isGranted('ROLE_SENEGAL')) {
+                $pays = 'Sénégal';
+            } else {
+                throw $this->createAccessDeniedException("Votre rôle ne vous permet pas d'accéder aux expéditions.");
+            }
+
+            // Vérifier si l'expédition correspond au pays de l'utilisateur
+            if ($expeditionEntity->getDestinations() !== $pays) {
+                throw $this->createAccessDeniedException("Vous ne pouvez voir que les expéditions destinées à votre pays.");
+            }
+
+            // Filtrer les colis de cette expédition
+            $colis = $baseColisRepository->findBy(['expeditions' => $expeditionEntity]);
+        } else {
+            throw $this->createAccessDeniedException("Accès refusé !");
+        }
+
+        return $this->render('base_colis/liste.html.twig', [
+            'base_colis' => $colis,
+            'expedition' => $expeditionEntity,
+        ]);
+    }
+
+
+    #[Route('/encaisser/{id}', name: 'encaisser_colis', methods: ['POST'])]
+    public function encaisser(
+        int $id,
+        Request $request,
+        BaseColisRepository $colisRepository,
+        PaiementsRepository $paiementsRepository,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        $user = $this->getUser();
+        $colis = $colisRepository->find($id);
+
+        if (!$colis) {
+            return new JsonResponse(['message' => 'Colis introuvable'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Vérification du droit d'encaisser selon le rôle
+        if ($this->isGranted('ROLE_ADMIN')) {
+            // L'admin peut encaisser n'importe quel colis
+        } elseif ($this->isGranted('ROLE_REPRESENTANT')) {
+            $paysAutorisé = $this->isGranted('ROLE_MALI') ? 'Mali' : 'Sénégal';
+
+            if ($colis->getExpeditions()->getDestinations() !== $paysAutorisé) {
+                return new JsonResponse(['message' => 'Accès refusé : Vous ne pouvez encaisser que les colis de votre pays'], Response::HTTP_FORBIDDEN);
+            }
+        } else {
+            return new JsonResponse(['message' => 'Accès refusé'], Response::HTTP_FORBIDDEN);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $montantPayé = $data['montantPayé'];
+
+        // Vérifier que le montant payé ne dépasse pas le montant restant
+        $montantRestant = $colis->getFraisExpeditions() - $colis->getMontantPaye();
+        if ($montantPayé > $montantRestant) {
+            return new JsonResponse(['message' => 'Erreur : Montant payé supérieur au montant restant'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Enregistrer le paiement avec remise
+        $paiement = new Paiements();
+        $paiement->setColis($colis);
+        $paiement->setMontants($montantPayé);
+        $paiement->setDatePaiements(new \DateTime());
+        $paiement->setModePaiement('Espèces');
+        $paiement->setCaissier($user);
+        $paiement->setRemises(0);
+
+        $entityManager->persist($paiement);
+        $entityManager->flush();
+
+        return new JsonResponse(['message' => 'Paiement enregistré avec succès'], Response::HTTP_CREATED);
+    }
+
+
+    #[Route('/recherche/{codeRetrait}', name: 'recherche_colis', methods: ['GET'])]
+    public function rechercheColis(string $codeRetrait, BaseColisRepository $colisRepository): JsonResponse
+    {
+        $colis = $colisRepository->findOneBy(['code' => $codeRetrait]);
+
+        if (!$colis) {
+            return new JsonResponse(['error' => 'Aucun colis trouvé avec ce code de retrait.'], Response::HTTP_NOT_FOUND);
+        }
+
+        return new JsonResponse([
+            'numeroSuivi' => $colis->getNumeroSuivi(),
+            'codeRetrait' => $colis->getCode(),
+            'typeExpeditions' => $colis->getTypeExpeditions(),
+            'unites' => $colis->getUnites(),
+            'fraisExpeditions' => number_format($colis->getFraisExpeditions(), 0, '.', ','),
+            'statut' => $colis->getStatut(),
+            'statutPaiements' => $colis->getStatutPaiements(),
+            'montantPaye' => number_format($colis->getMontantPaye(), 0, '.', ','),
+            'remises' => number_format($colis->getRemises(), 0, '.', ','),
+            'montantRestant' => number_format($colis->getFraisExpeditions() - $colis->getMontantPaye() - $colis->getRemises(), 0, '.', ','),
+            'dateReceptions' => $colis->getDateReceptions()?->format('d-m-Y'),
+            'clients' => [
+                'prenom' => $colis->getClients()->getPrenom(),
+                'nom' => $colis->getClients()->getNom(),
+            ],
+            'expeditions' => [
+                'destinations' => $colis->getExpeditions()->getDestinations(),
+                'dateExpeditions' => $colis->getExpeditions()->getDateExpeditions()?->format('Y-m-d'),
+            ]
+        ]);
+    }
+
+
+    #[Route('/marquer-recupere/{id}', name: 'colis_marquer_recupere', methods: ['POST'])]
+    public function marquerRecupere(
+         $id,
+        BaseColisRepository $baseColisRepository,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        $colis = $baseColisRepository->findOneBy(['url' => $id ]);
+
+        if (!$colis) {
+            return new JsonResponse(['success' => false, 'message' => 'Colis non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($colis->getStatut() === 'Récupéré') {
+            return new JsonResponse(['success' => false, 'message' => 'Ce colis est déjà récupéré'], Response::HTTP_CONFLICT);
+        }
+
+        $colis->setStatut('Récupéré');
+        $entityManager->persist($colis);
+        $entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'message' => 'Colis marqué comme récupéré'], Response::HTTP_OK);
+    }
+
 
 
     #[Route('/{id}/edit', name: 'app_base_colis_edit', methods: ['GET', 'POST'])]
@@ -183,92 +274,6 @@ final class BaseColisController extends AbstractController
         ], Response::HTTP_OK);
     }
 
-    #[Route('/confirmation/enregistrement/{numeroSuivi}', name: 'conf_enregistrement', methods: ['GET'])]
-    public function recu($numeroSuivi): Response
-    {
-
-        return $this->render('base_colis/recus.html.twig', [
-            "colis" => $numeroSuivi
-
-        ]);
-    }
-
-    #[Route('/details/{numeroSuivi}', name: 'colis_details', methods: ['GET'])]
-    public function getColisDetails(BaseColisRepository $colisRepository, $numeroSuivi): JsonResponse
-    {
-        $colis = $colisRepository->findOneBy(['numeroSuivi' => $numeroSuivi]);
-
-        if (!$colis) {
-            return new JsonResponse(['error' => 'Colis non trouvé'], 404);
-        }
-
-        // dd($colis);
-
-        return new JsonResponse([
-            'numeroSuivi' => $colis->getNumeroSuivi(),
-            'expediteur' => $colis->getDestinateurs()->getPrenom() . ' ' . $colis->getDestinateurs()->getNom(),
-            'telephone' => $colis->getDestinateurs()->getUsename(),
-            'dateReception' => $colis->getDateReceptions()->format('d/m/Y'),
-            /* 'details' => $colis->getDetailsString(), // Format personnalisé de détails */
-            'qrCodePath' => $colis->getQrCodePath(),
-        ]);
-    }
-
-
-
-
-    #[Route('/option-scanner/camera', name: 'qr_scan_index', methods: ['GET'])]
-    public function scaner(): Response
-    {
-
-        return $this->render('base_colis/scan.html.twig', []);
-    }
-
-
-    #[Route('/option-scanner/camera/result', name: 'qr_scan', methods: ['POST'])]
-    public function handleQrScan(Request $request)
-    {
-        // Récupérer le contenu JSON envoyé par le client
-        $data = json_decode($request->getContent(), true);
-
-        // Vérification si 'qrData' est défini
-        if (!isset($data['qrData'])) {
-            return new JsonResponse([
-                'message' => 'QR Code data missing'
-            ], Response::HTTP_BAD_REQUEST);
-        }
-
-        // Extraire les données du QR code
-        $qrData = $data['qrData'];
-
-        // Vérifier si qrData commence par "colis:" ou "client:"
-        if (strpos($qrData, 'colis:') === 0) {
-            // Si qrData commence par "colis:"
-            // Extraire l'ID du colis après "colis:"
-            $colisId = substr($qrData, 6);  // 6 est la longueur de "colis:"
-            // Traitement pour le colis avec l'ID extrait
-            return new JsonResponse([
-                'message' => 'QR Code pour colis reçu',
-                'colisId' => $colisId,
-                'redirectUrl' => '/path/to/colis/' . $colisId // URL de redirection pour le colis
-            ]);
-        } elseif (strpos($qrData, 'client:') === 0) {
-            // Si qrData commence par "client:"
-            // Extraire l'ID du client après "client:"
-            $clientId = substr($qrData, 7);  // 7 est la longueur de "client:"
-            // Traitement pour le client avec l'ID extrait
-            return new JsonResponse([
-                'message' => 'QR Code pour client reçu',
-                'clientId' => $clientId,
-                'redirectUrl' => '/path/to/client/' . $clientId // URL de redirection pour le client
-            ]);
-        }
-
-        // Si aucune correspondance
-        return new JsonResponse([
-            'message' => 'QR Code inconnu'
-        ], Response::HTTP_BAD_REQUEST);
-    }
 
 
 
@@ -283,8 +288,6 @@ final class BaseColisController extends AbstractController
 
 
 
-
-
         return $this->render('base_colis/details.html.twig', [
             'colis' => $coli,
         ]);
@@ -293,7 +296,7 @@ final class BaseColisController extends AbstractController
 
 
     #[Route('/details/{url}/chargement-statut', name: 'changer_statut_via_qr', methods: ['POST'])]
-    public function changerStatut($url, Request $request, BaseColisRepository $BaseColisRepository, EntityManagerInterface $em): Response
+    public function changerStatut($url, MailerInterface $mailer, Request $request, BaseColisRepository $BaseColisRepository, EntityManagerInterface $em): Response
     {
 
         $colis = $BaseColisRepository->findOneBy(['url' =>  $url]);
@@ -318,6 +321,42 @@ final class BaseColisController extends AbstractController
             $em->flush();
 
 
+            if ($nouveauStatut == 'Arrivé') {
+                $senderAdresse = "tel:+22378478742";
+                $receiverAdresse = "tel:+223" . $colis->getDestinateurs()->getUsename();
+                $message = '';
+
+                $newToken = new Configsms();
+
+                $token = $newToken->getTokenFromConsumerKey();
+                $config = array(
+                    'token' =>
+                    $token['access_token']
+                );
+
+                $message = "$message = 'Bonjour, nous vous informons que votre colis est arrivé à Bamako. Poids : ' . $colis->getPoidsVolumeTotal . ' kg. Prix : ' . number_format($colis->getPrix(), 2, ',', ' ') . ' FCFA. Merci pour votre confiance.';
+";
+                $osms = new Configsms($config);
+                $osms->setVerifyPeerSSL(false);
+                $response = $osms->sendSms($senderAdresse, $receiverAdresse, $message, '');
+            } else {
+                // generate a signed url and email it to the user
+                $email = (new TemplatedEmail())
+                    ->from('info@Sotrama.gescoflex.com')
+                    ->to(new Address($colis->getDestinateurs()->getEmail()))
+                    ->subject('Restauration - CIRA')
+
+                    // path of the Twig template to render
+                    ->htmlTemplate('message.html.twig')
+
+                    // pass variables (name => value) to the template
+                    ->context([
+
+                        'user' => $colis->getDestinateurs(),
+                    ]);
+
+                $mailer->send($email);
+            }
 
             $this->addFlash('success', 'Le statut du colis a été mis à jour avec succès!');
         }
@@ -326,7 +365,7 @@ final class BaseColisController extends AbstractController
     }
 
 
-    #[Route('/encaisser/{id}', name: 'encaisser', methods: ['POST'])]
+    /*  #[Route('/encaisser/{id}', name: 'encaisser', methods: ['POST'])]
     public function encaisser(int $id, BaseColisRepository $colisRepository, PaiementsRepository $paiementsRepository, EntityManagerInterface $entityManager): JsonResponse
     {
         $colis = $colisRepository->find($id);
@@ -355,7 +394,7 @@ final class BaseColisController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse(['message' => 'Paiement enregistré avec succès'], Response::HTTP_CREATED);
-    }
+    } */
 
     #[Route('/rechercher', name: 'rechercher', methods: ['GET'])]
     public function rechercher(Request $request, BaseColisRepository $baseColisRepository): JsonResponse

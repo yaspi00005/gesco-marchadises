@@ -1,0 +1,112 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Stocks index
+{% endblock %}
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" href="{{ domaine }}/assets/css/dataTables.bootstrap4.min.css" />
+  
+{% endblock %}
+{% block body %}
+  <div class="page-wrapper">
+    <!-- content -->
+    <div class="content container-fluid">
+      <div class="page-header">
+        <div class="row">
+          <div class="col-lg-7 col-md-12 col-sm-12 col-12">
+            <h5 class="text-uppercase">Expédition</h5>
+          </div>
+          <div class="col-lg-5 col-md-12 col-sm-12 col-12">
+            <ul class="list-inline breadcrumb float-right">
+              <li class="list-inline-item">
+                <a href="/">Accueil</a>
+              </li>
+
+              <li class="list-inline-item">Colis expédié</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4 col-3"></div>
+      </div>
+      <div class="content-page">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="table-responsive">
+              <table class="table table-striped m-b-0 datatable">
+                <div class="col-sm-12 col-12 text-right m-b-20"></div>
+                <thead>
+                  <tr>
+                    <th>Numéro de colis</th>
+                    <th>Code de retrait</th>
+                    <th>Type d'Expédition</th>
+                    <th>Unité</th>
+                    <th>Frais d’expédition</th>
+                    <th>État du colis</th>
+                    <th>Paiement</th>
+                    <th>Remise</th>
+                    <th>Montant restant</th>
+                    <th>Date de réception</th>
+                    <th>Expéditeur</th>
+                    <th>Expédition</th>
+                  </tr>
+                </thead>
+                <tbody class="journal">
+                  {% for base_coli in base_colis %}
+                    <tr>
+                      <td class="text-left">
+                        <a href="{{ path('colis_details_clt', { url: base_coli.url }) }}">{{ base_coli.numeroSuivi }}</a>
+                      </td>
+                      <td class="text-left">{{ base_coli.code }}</td>
+                      <td class="text-left">{{ base_coli.typeExpeditions }}</td>
+                      <td class="text-left">{{ base_coli.unites }}</td>
+                      <td class="text-left">{{ base_coli.fraisExpeditions|number_format(0, '.', ',') }}</td>
+                      <td class="text-right">
+                        <a class="btn btn-sm btn-rounded 
+          {% if base_coli.statut == 'En Préparation' %}
+
+                          {% elseif base_coli.statut == 'Expédié' %}
+
+                          {% elseif base_coli.statut == 'Livré' %}
+
+                          {% elseif base_coli.statut == 'Annulé' %}
+
+                          {% endif %}"
+                          href="#">
+                          {{ base_coli.statut }}
+                        </a>
+                      </td>
+                      <td>
+                        {{ base_coli.statutPaiements }}
+                      </td>
+                      <td>{{ base_coli.remises|number_format(0, '.', ',') }}</td>
+                      <td>{{ (base_coli.fraisExpeditions - base_coli.montantPaye - base_coli.remises)|number_format(0, '.', ',') }}</td>
+                      <td>{{ base_coli.dateReceptions ? base_coli.dateReceptions|date('d-m-Y') }}</td>
+                      <td>{{ base_coli.clients.prenom ~ ' ' ~ base_coli.clients.nom }}</td>
+                      <td>
+                        <a href="#">{{ base_coli.expeditions.destinations ~ '-' }}{{ base_coli.expeditions.dateExpeditions ? base_coli.expeditions.dateExpeditions|date('Y-m-d') : '' }}</a>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="12">Aucun enregistrement trouvé</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ 
+
+{% endblock %}
+{% block javascripts %}
+  <script type="text/javascript" src="{{ domaine }}/assets/js/base-colis.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" src="{{ domaine }}/assets/js/dataTables.bootstrap4.min.js"></script>
+{% endblock %}

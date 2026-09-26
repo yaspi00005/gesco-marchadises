@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Notification de Changement</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .header img {
+            max-height: 50px;
+            display: block;
+            margin: 0 auto 10px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #555;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            color: white;
+            background-color: #4CAF50;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .transitaire-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="{{ logoUrl }}" alt="Logo de l'entreprise">
+            <h1>Notification de Changement</h1>
+        </div>
+        <div class="content">
+            <p>Bonjour {{ user.prenom }} {{ user.nom }},</p>
+            <p>Nous vous informons qu'un changement important a été effectué concernant votre compte :</p>
+            <ul>
+                <li><strong>Type de changement :</strong> {{ changement.type }}</li>
+                <li><strong>Date du changement :</strong> {{ changement.date|date('d-m-Y H:i') }}</li>
+                <li><strong>Effectué par :</strong> {{ changement.effectuePar }}</li>
+            </ul>
+            <p>Transitaire en charge :</p>
+            <div class="transitaire-info">
+                {# <p><strong>Nom :</strong> {{ transitaire.nom }}</p>
+                <p><strong>Adresse :</strong> {{ transitaire.adresse }}</p>
+                <p><strong>Téléphone :</strong> {{ transitaire.telephone }}</p> #}
+            </div>
+            <p>Si vous avez des questions, n'hésitez pas à nous contacter immédiatement.</p>
+            <a href="#" class="button">Contactez le support</a>
+        </div>
+        <div class="footer">
+            <p>Merci de faire confiance à notre service.</p>
+            <p>— L'équipe de Support</p>
+        </div>
+    </div>
+</body>
+</html>
